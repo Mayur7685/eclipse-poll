@@ -4,6 +4,7 @@
   "installCommand": "npm install",
   "framework": null,
   "rewrites": [
+    { "source": "/zk/(.*)", "destination": "/zk/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
