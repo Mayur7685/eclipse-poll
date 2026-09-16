@@ -10,12 +10,10 @@
     "test": "node --test test/server.test.ts"
   },
   "dependencies": {
-    "@midnight-ntwrk/compact-runtime": "0.16.0",
     "@supabase/supabase-js": "^2.45.4",
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "eclipse-poll-contract": "file:../contract",
     "express": "^4.19.2",
     "viem": "^2.21.19"
   },

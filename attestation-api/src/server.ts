@@ -5,10 +5,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
-import { jubjubPointX, jubjubPointY } from '@midnight-ntwrk/compact-runtime';
-import { signCredential, getProviderPublicKey } from './signing.js';
 import { getUserToken, getUserMeta } from './oauth.js';
-import { CredentialType } from './types.js';
 
 const app = express();
 app.use(cors({
@@ -66,66 +63,8 @@ app.get(['/health', '/api/health'], (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Returns attestation provider public key for contract registration
-app.get(['/provider-key', '/api/provider-key'], (req: Request, res: Response) => {
-  const pk = getProviderPublicKey();
-  res.json({
-    x: jubjubPointX(pk).toString(),
-    y: jubjubPointY(pk).toString(),
-  });
-});
 
-// Allowlist Attestation Endpoint
-app.post(['/attest/allowlist', '/api/attest/allowlist'], (req: Request, res: Response) => {
-  try {
-    const { pollIdHash, userPubKeyHash } = req.body;
-    const pHash = BigInt(pollIdHash && pollIdHash.startsWith('0x') ? pollIdHash : '0x' + (pollIdHash || '1234'));
-    const uHash = BigInt(userPubKeyHash && userPubKeyHash.startsWith('0x') ? userPubKeyHash : '0x' + (userPubKeyHash || 'abcd'));
 
-    const sig = signCredential(BigInt(CredentialType.ALLOWLIST), pHash, uHash);
-
-    res.json({
-      announcement: {
-        x: jubjubPointX(sig.announcement).toString(),
-        y: jubjubPointY(sig.announcement).toString(),
-      },
-      response: sig.response.toString(),
-      providerPk: {
-        x: jubjubPointX(sig.providerPk).toString(),
-        y: jubjubPointY(sig.providerPk).toString(),
-      },
-      credType: CredentialType.ALLOWLIST,
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message || 'Attestation failed' });
-  }
-});
-
-// Social OAuth Attestation Endpoint
-app.post(['/attest/oauth', '/api/attest/oauth'], (req: Request, res: Response) => {
-  try {
-    const { pollIdHash, userPubKeyHash } = req.body;
-    const pHash = BigInt(pollIdHash && pollIdHash.startsWith('0x') ? pollIdHash : '0x' + (pollIdHash || '1234'));
-    const uHash = BigInt(userPubKeyHash && userPubKeyHash.startsWith('0x') ? userPubKeyHash : '0x' + (userPubKeyHash || 'abcd'));
-
-    const sig = signCredential(BigInt(CredentialType.SOCIAL_OAUTH), pHash, uHash);
-
-    res.json({
-      announcement: {
-        x: jubjubPointX(sig.announcement).toString(),
-        y: jubjubPointY(sig.announcement).toString(),
-      },
-      response: sig.response.toString(),
-      providerPk: {
-        x: jubjubPointX(sig.providerPk).toString(),
-        y: jubjubPointY(sig.providerPk).toString(),
-      },
-      credType: CredentialType.SOCIAL_OAUTH,
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message || 'Attestation failed' });
-  }
-});
 
 // --- Communities Endpoints ---
 
@@ -449,80 +388,6 @@ app.post(['/verify/check', '/api/verify/check'], async (req: Request, res: Respo
   res.json({ passed, results });
 });
 
-app.post(['/verify/credential-params', '/api/verify/credential-params'], async (req: Request, res: Response) => {
-  const { communityId, evmAddress, connectedAccounts = [], pollIdHash, userPubKeyHash } = req.body;
-  const community = communitiesStore.find((c) => c.community_id === communityId);
-
-  // Run the same requirement check
-  const results = community
-    ? await checkRequirements(community, evmAddress ?? '', connectedAccounts)
-    : [{ requirementId: 'auto', passed: true, message: 'Open community' }];
-
-  const groups = community?.requirement_groups ?? [];
-  let passed: boolean;
-
-  if (groups.length === 0) {
-    passed = true;
-  } else {
-    passed = groups.some((group: any) => {
-      const groupReqs = group.requirements ?? [];
-      if (groupReqs.length === 0) return true;
-      if (group.logic === 'OR') {
-        return groupReqs.some((req: any) =>
-          results.find(r => r.requirementId === (req.id ?? req.type))?.passed
-        );
-      }
-      return groupReqs.every((req: any) =>
-        results.find(r => r.requirementId === (req.id ?? req.type))?.passed
-      );
-    });
-  }
-
-  if (!passed) {
-    res.json({ passed: false, results, credentialIssued: false });
-    return;
-  }
-
-  // Requirements passed — issue a Schnorr attestation if poll/user hashes are provided
-  // The attestation is what the ZK circuit will verify on-chain
-  try {
-    if (pollIdHash && userPubKeyHash) {
-      const { signCredential, getProviderPublicKey } = await import('./signing.js');
-      const { jubjubPointX, jubjubPointY } = await import('@midnight-ntwrk/compact-runtime');
-
-      const credType = BigInt(community?.credential_type ?? 0);
-      const pHash = BigInt(pollIdHash.startsWith?.('0x') ? pollIdHash : '0x' + pollIdHash);
-      const uHash = BigInt(userPubKeyHash.startsWith?.('0x') ? userPubKeyHash : '0x' + userPubKeyHash);
-
-      const sig = signCredential(credType, pHash, uHash);
-      const pk = getProviderPublicKey();
-
-      res.json({
-        passed: true,
-        credentialIssued: true,
-        results,
-        attestation: {
-          announcement: {
-            x: jubjubPointX(sig.announcement).toString(),
-            y: jubjubPointY(sig.announcement).toString(),
-          },
-          response: sig.response.toString(),
-          providerPk: {
-            x: jubjubPointX(pk).toString(),
-            y: jubjubPointY(pk).toString(),
-          },
-          credType: credType.toString(),
-        },
-      });
-    } else {
-      // No hashes provided — just confirm eligibility, no attestation issued
-      res.json({ passed: true, credentialIssued: false, results });
-    }
-  } catch (err: any) {
-    console.error('[verify/credential-params] signing error:', err);
-    res.status(500).json({ error: err.message ?? 'Attestation signing failed' });
-  }
-});
 
 // --- Pinata IPFS Proxy ---
 
