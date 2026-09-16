@@ -1,0 +1,395 @@
+{
+  "compiler-version": "0.31.0",
+  "language-version": "0.23.0",
+  "runtime-version": "0.16.0",
+  "circuits": [
+    {
+      "name": "registerCommunity",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "communityId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "configHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "credType",
+          "type": {
+            "type-name": "Enum",
+            "name": "CredentialType",
+            "elements": [
+              "FREE",
+              "ALLOWLIST",
+              "SOCIAL_OAUTH"
+            ]
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "createPoll",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        },
+        {
+          "name": "pollType",
+          "type": {
+            "type-name": "Enum",
+            "name": "PollType",
+            "elements": [
+              "SIMPLE",
+              "RANKED_CHOICE",
+              "HIERARCHICAL"
+            ]
+          }
+        },
+        {
+          "name": "credType",
+          "type": {
+            "type-name": "Enum",
+            "name": "CredentialType",
+            "elements": [
+              "FREE",
+              "ALLOWLIST",
+              "SOCIAL_OAUTH"
+            ]
+          }
+        },
+        {
+          "name": "optionCount",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 255
+          }
+        },
+        {
+          "name": "endTime",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "castBinaryVote",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "castRankedVote",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "closePoll",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    }
+  ],
+  "witnesses": [
+    {
+      "name": "getUserSecret",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Alias",
+        "name": "UserSecretKey",
+        "type": {
+          "type-name": "Bytes",
+          "length": 32
+        }
+      }
+    },
+    {
+      "name": "getVoteChoice",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Uint",
+        "maxval": 255
+      }
+    },
+    {
+      "name": "getRankedWeights",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Vector",
+        "length": 8,
+        "type": {
+          "type-name": "Uint",
+          "maxval": 255
+        }
+      }
+    }
+  ],
+  "contracts": [
+  ],
+  "ledger": [
+    {
+      "name": "contractAdmin",
+      "index": 0,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Alias",
+        "name": "AdminPublicKey",
+        "type": {
+          "type-name": "Bytes",
+          "length": 32
+        }
+      }
+    },
+    {
+      "name": "communities",
+      "index": 1,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
+        "type-name": "Struct",
+        "name": "CommunityOnChainConfig",
+        "elements": [
+          {
+            "name": "creator",
+            "type": {
+              "type-name": "Alias",
+              "name": "UserPublicKey",
+              "type": {
+                "type-name": "Bytes",
+                "length": 32
+              }
+            }
+          },
+          {
+            "name": "credType",
+            "type": {
+              "type-name": "Enum",
+              "name": "CredentialType",
+              "elements": [
+                "FREE",
+                "ALLOWLIST",
+                "SOCIAL_OAUTH"
+              ]
+            }
+          },
+          {
+            "name": "configHash",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "polls",
+      "index": 2,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Alias",
+        "name": "PollId",
+        "type": {
+          "type-name": "Bytes",
+          "length": 32
+        }
+      },
+      "value": {
+        "type-name": "Struct",
+        "name": "PollConfig",
+        "elements": [
+          {
+            "name": "creator",
+            "type": {
+              "type-name": "Alias",
+              "name": "UserPublicKey",
+              "type": {
+                "type-name": "Bytes",
+                "length": 32
+              }
+            }
+          },
+          {
+            "name": "pollType",
+            "type": {
+              "type-name": "Enum",
+              "name": "PollType",
+              "elements": [
+                "SIMPLE",
+                "RANKED_CHOICE",
+                "HIERARCHICAL"
+              ]
+            }
+          },
+          {
+            "name": "credType",
+            "type": {
+              "type-name": "Enum",
+              "name": "CredentialType",
+              "elements": [
+                "FREE",
+                "ALLOWLIST",
+                "SOCIAL_OAUTH"
+              ]
+            }
+          },
+          {
+            "name": "optionCount",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 255
+            }
+          },
+          {
+            "name": "endTime",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
+          },
+          {
+            "name": "isClosed",
+            "type": {
+              "type-name": "Boolean"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "pollCount",
+      "index": 3,
+      "exported": true,
+      "storage": "Counter"
+    },
+    {
+      "name": "nullifiers",
+      "index": 4,
+      "exported": true,
+      "storage": "Set",
+      "type": {
+        "type-name": "Alias",
+        "name": "Nullifier",
+        "type": {
+          "type-name": "Bytes",
+          "length": 32
+        }
+      }
+    },
+    {
+      "name": "tallies",
+      "index": 5,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Alias",
+        "name": "PollId",
+        "type": {
+          "type-name": "Bytes",
+          "length": 32
+        }
+      },
+      "value": {
+        "type-name": "Map",
+        "key": {
+          "type-name": "Uint",
+          "maxval": 255
+        },
+        "value": {
+          "type-name": "Counter"
+        }
+      }
+    }
+  ]
+}

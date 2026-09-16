@@ -1,0 +1,191 @@
+pragma language_version >= 0.22 && <= 0.23;
+
+import CompactStandardLibrary;
+
+// --- Enums ---
+export enum PollType { SIMPLE, RANKED_CHOICE, HIERARCHICAL }
+export enum CredentialType { FREE, ALLOWLIST, SOCIAL_OAUTH }
+
+// --- Nominal Types (domain isolation) ---
+export new type UserSecretKey = Bytes<32>;
+export new type UserPublicKey = Bytes<32>;
+export new type AdminPublicKey = Bytes<32>;
+export new type PollId = Bytes<32>;
+export new type Nullifier = Bytes<32>;
+
+// --- Community Configuration Struct ---
+export struct CommunityOnChainConfig {
+  creator: UserPublicKey;
+  credType: CredentialType;
+  configHash: Bytes<32>;
+}
+
+// --- Poll Configuration Struct ---
+export struct PollConfig {
+  creator: UserPublicKey;
+  pollType: PollType;
+  credType: CredentialType;
+  optionCount: Uint<8>;
+  endTime: Uint<64>;
+  isClosed: Boolean;
+}
+
+// --- Ledger State (Public) ---
+export ledger contractAdmin: AdminPublicKey;
+
+export ledger communities: Map<Bytes<32>, CommunityOnChainConfig>;
+export ledger polls: Map<PollId, PollConfig>;
+export ledger pollCount: Counter;
+export ledger nullifiers: Set<Nullifier>;
+
+// Real-Time Tally Counters
+// tallies[pollId][optionIndex] = vote count
+export ledger tallies: Map<PollId, Map<Uint<8>, Counter>>;
+
+// --- Witnesses (Private Inputs) ---
+witness getUserSecret(): UserSecretKey;
+witness getVoteChoice(): Uint<8>;
+witness getRankedWeights(): Vector<8, Uint<8>>;
+
+// --- Pure Helper Circuits ---
+pure circuit deriveUserPublicKey(sk: UserSecretKey, secretPin: Uint<16>): UserPublicKey {
+  return persistentHash<Vector<3, Bytes<32>>>([
+    pad(32, "eclipse:voter:pk:v1"),
+    sk as Bytes<32>,
+    persistentHash<Uint<16>>(secretPin)
+  ]) as UserPublicKey;
+}
+
+pure circuit deriveAdminPublicKey(sk: UserSecretKey): AdminPublicKey {
+  return persistentHash<Vector<2, Bytes<32>>>([
+    pad(32, "eclipse:admin:pk:v1"),
+    sk as Bytes<32>
+  ]) as AdminPublicKey;
+}
+
+pure circuit computeNullifier(sk: UserSecretKey, pollId: PollId): Nullifier {
+  return persistentHash<Vector<3, Bytes<32>>>([
+    pad(32, "eclipse:nullifier:v1"),
+    sk as Bytes<32>,
+    pollId as Bytes<32>
+  ]) as Nullifier;
+}
+
+// --- Constructor ---
+constructor() {
+  contractAdmin = disclose(deriveAdminPublicKey(getUserSecret()));
+}
+
+// --- Community Registration ---
+export circuit registerCommunity(
+  communityId: Bytes<32>,
+  configHash: Bytes<32>,
+  credType: CredentialType
+): [] {
+  assert(!communities.member(disclose(communityId)), "Community already registered");
+  const sk = getUserSecret();
+  const creatorPk = deriveUserPublicKey(sk, 0 as Uint<16>);
+
+  const comm = CommunityOnChainConfig {
+    creator: creatorPk,
+    credType: disclose(credType),
+    configHash: disclose(configHash)
+  };
+  communities.insert(disclose(communityId), disclose(comm));
+}
+
+// --- Poll Creation ---
+export circuit createPoll(
+  pollId: PollId, pollType: PollType,
+  credType: CredentialType, optionCount: Uint<8>,
+  endTime: Uint<64>
+): [] {
+  assert(!polls.member(disclose(pollId)), "Poll already exists");
+  assert(disclose(optionCount) >= 2, "Need at least 2 options");
+  assert(disclose(optionCount) <= 8, "Max 8 options");
+
+  const sk = getUserSecret();
+  const creatorPk = deriveUserPublicKey(sk, 0 as Uint<16>);
+
+  const config = PollConfig {
+    creator: creatorPk,
+    pollType: disclose(pollType),
+    credType: disclose(credType),
+    optionCount: disclose(optionCount),
+    endTime: disclose(endTime),
+    isClosed: false
+  };
+  polls.insert(disclose(pollId), disclose(config));
+
+  // Pre-initialize tally counters for all 8 possible option slots.
+  tallies.insertDefault(disclose(pollId));
+  for (const i of 0..8) {
+    tallies.lookup(disclose(pollId)).insertDefault(i as Uint<8>);
+  }
+
+  pollCount.increment(1);
+}
+
+// --- Voting Circuits ---
+// Credential enforcement is handled off-chain by the attestation API.
+// On-chain we only enforce: poll exists, not closed, correct type, no double-vote.
+export circuit castBinaryVote(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  assert(!config.isClosed, "Poll closed");
+  assert(config.pollType == PollType.SIMPLE, "Not a simple poll");
+
+  // Anti-double-vote via nullifier
+  const sk = getUserSecret();
+  const nul = computeNullifier(sk, pollId);
+  assert(!nullifiers.member(disclose(nul)), "Already voted");
+  nullifiers.insert(disclose(nul));
+
+  // Private vote -> public tally increment
+  const choice = getVoteChoice();
+  assert(choice < config.optionCount, "Invalid option choice");
+  tallies.lookup(pid).lookup(disclose(choice)).increment(1);
+}
+
+export circuit castRankedVote(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  assert(!config.isClosed, "Poll closed");
+  assert(config.pollType == PollType.RANKED_CHOICE, "Not a ranked poll");
+
+  const sk = getUserSecret();
+  const nul = computeNullifier(sk, pollId);
+  assert(!nullifiers.member(disclose(nul)), "Already voted");
+  nullifiers.insert(disclose(nul));
+
+  // Ranked weights -> Borda scoring
+  const weights = getRankedWeights();
+  for (const i of 0..8) {
+    if ((i as Uint<8>) < config.optionCount) {
+      tallies.lookup(pid).lookup(disclose(i as Uint<8>)).increment(
+        disclose(weights[i]) as Uint<16>
+      );
+    }
+  }
+}
+
+export circuit closePoll(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  const sk = getUserSecret();
+  const callerPk = deriveUserPublicKey(sk, 0 as Uint<16>);
+  assert(config.creator == callerPk, "Only creator can close");
+
+  polls.insert(pid, PollConfig {
+    creator: config.creator,
+    pollType: config.pollType,
+    credType: config.credType,
+    optionCount: config.optionCount,
+    endTime: config.endTime,
+    isClosed: disclose(true)
+  });
+}
+
