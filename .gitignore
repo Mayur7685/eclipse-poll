@@ -20,6 +20,9 @@ build/
 out/
 .cache/
 *.tsbuildinfo
+# Allow committed dist folders (pre-built for deployment, no secrets)
+!contract/dist/
+!attestation-api/dist/
 
 # ── Vite ──────────────────────────────────────────────────────────────────────
 *.local
