@@ -10,8 +10,8 @@ Eclipse Poll is a privacy-preserving governance dApp built on **Midnight Network
 
 | Service | URL |
 |---|---|
-| Frontend | [your-app.vercel.app](https://your-app.vercel.app) *(update after Vercel deploy)* |
-| Attestation API | [your-api.onrender.com](https://your-api.onrender.com) *(update after Render deploy)* |
+| Frontend | [eclipse-poll.vercel.app](https://eclipse-poll.vercel.app) |
+| Attestation API | [eclipse-poll-api-h0a8.onrender.com](https://eclipse-poll-api-h0a8.onrender.com) |
 | Contract (Preprod) | [`06fc9596...607b1ba2f`](https://explorer.1am.xyz/contract/06fc9596f1c12928bd7904f927b995bf727713fa292679b300900ae607b1ba2f?network=preprod) |
 
 ---

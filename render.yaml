@@ -12,7 +12,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: APP_URL
-        sync: false   # Set to your Vercel frontend URL
+        sync: false   # https://eclipse-poll.vercel.app
       - key: ATTESTATION_SECRET_KEY
         sync: false
       - key: PINATA_JWT
