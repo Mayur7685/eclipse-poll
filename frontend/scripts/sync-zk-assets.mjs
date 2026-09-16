@@ -6,8 +6,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const projectRoot = path.resolve(__dirname, '../..');
-const sourceDir = path.join(projectRoot, 'contract/src/managed/eclipse_poll');
-const targetDir = path.join(projectRoot, 'frontend/public/zk/eclipse-poll');
+// Use contract/dist/managed/ — committed to repo (works on Vercel/CI)
+// Falls back to contract/src/managed/ for local dev with freshly compiled contract
+const distManaged = path.join(projectRoot, 'contract/dist/managed/eclipse_poll');
+const srcManaged  = path.join(projectRoot, 'contract/src/managed/eclipse_poll');
+const sourceDir   = fs.existsSync(distManaged) ? distManaged : srcManaged;
+const targetDir   = path.join(projectRoot, 'frontend/public/zk/eclipse-poll');
 
 console.log(`Syncing ZK assets from ${sourceDir} to ${targetDir}...`);
 
