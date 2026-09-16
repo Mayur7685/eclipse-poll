@@ -3,59 +3,38 @@ services:
     name: eclipse-poll-api
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build --workspace=attestation-api
-    startCommand: node attestation-api/dist/server.js
+    # Root directory is set to 'attestation-api' in Render dashboard
+    # So all paths below are relative to attestation-api/
+    buildCommand: npm install
+    startCommand: npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: APP_URL
-        # Set this to your Render service URL after first deploy
-        # e.g. https://eclipse-poll-api.onrender.com
-        sync: false
+        sync: false   # Set to your Vercel frontend URL
       - key: ATTESTATION_SECRET_KEY
         sync: false
       - key: PINATA_JWT
         sync: false
-      # ── OAuth Apps (all server-side — no client IDs on frontend) ───────────
-      # GitHub: https://github.com/settings/applications/new
-      #   Callback: https://eclipse-poll-api.onrender.com/auth/github/callback
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # ── Coming Soon (leave empty) ──────────────────────────────────────────
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
         sync: false
-      # Discord: https://discord.com/developers/applications
-      #   Callback: https://eclipse-poll-api.onrender.com/auth/discord/callback
       - key: DISCORD_CLIENT_ID
         sync: false
       - key: DISCORD_CLIENT_SECRET
         sync: false
-      - key: DISCORD_BOT_TOKEN
-        sync: false
-      # Twitter/X: https://developer.twitter.com/en/portal
-      #   Callback: https://eclipse-poll-api.onrender.com/auth/twitter/callback
       - key: TWITTER_CLIENT_ID
         sync: false
       - key: TWITTER_CLIENT_SECRET
         sync: false
-      # twitterapi.io key for follow checks (free tier available)
-      # https://twitterapi.io
       - key: TWITTERAPI_IO_KEY
         sync: false
-      # Telegram: create bot via @BotFather, add to group as admin
       - key: TELEGRAM_BOT_TOKEN
-        sync: false
-      # Optional: restrict CORS to your Vercel frontend
-      - key: FRONTEND_URL
-        sync: false
-      # ── Supabase Database ──────────────────────────────────────────────────
-      # Free tier: https://supabase.com → New Project → SQL editor → run:
-      #   CREATE TABLE submissions (
-      #     address TEXT NOT NULL, poll_id TEXT NOT NULL,
-      #     ciphertext TEXT NOT NULL, saved_at BIGINT NOT NULL,
-      #     PRIMARY KEY (address, poll_id)
-      #   );
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
