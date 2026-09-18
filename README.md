@@ -18,6 +18,14 @@ Eclipse Poll is a privacy-preserving governance dApp built on **Midnight Network
 
 ---
 
+## Demo Video
+
+[![Eclipse Poll Demo](https://img.youtube.com/vi/DmC5zzCP9_8/0.jpg)](https://youtu.be/DmC5zzCP9_8)
+
+Watch the full demo: [https://youtu.be/DmC5zzCP9_8](https://youtu.be/DmC5zzCP9_8)
+
+---
+
 ## Live Demo
 
 | Service | URL |
