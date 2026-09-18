@@ -8,7 +8,7 @@
     "compile": "compact compile +0.31.0 src/eclipse_poll.compact src/managed/eclipse_poll",
     "build": "rm -rf dist && npm run compile && mkdir -p dist && cp -R src/managed dist/managed && npx tsc",
     "test": "node --test test/compile.test.ts",
-    "build:ts": "mkdir -p dist && cp -R src/managed dist/managed && npx tsc"
+    "build:ts": "npx tsc"
   },
   "dependencies": {
     "@midnight-ntwrk/compact-runtime": "0.16.0",
