@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  contract:
+    name: Contract — Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - name: Run contract tests
+        run: npm test --workspace=contract
+
+  frontend:
+    name: Frontend — Build & Test
+    runs-on: ubuntu-latest
+    needs: contract
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - name: Create frontend .env
+        run: |
+          cat > frontend/.env << EOF
+          VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS=test_placeholder
+          VITE_MIDNIGHT_INDEXER_URI=https://indexer.preprod.midnight.network/api/v4/graphql
+          VITE_MIDNIGHT_NETWORK_ID=preprod
+          VITE_VERIFIER_URL=http://localhost:4000
+          VITE_PINATA_GATEWAY=https://test.mypinata.cloud
+          EOF
+      - name: Run frontend tests
+        run: npm test --workspace=frontend
+      - name: Build frontend
+        run: npm run build:contract:ts && npm run sync:zk && npm run build --workspace=frontend
+      - name: Verify build output
+        run: ls frontend/dist/index.html
