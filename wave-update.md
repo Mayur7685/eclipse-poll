@@ -1,6 +1,6 @@
 # Eclipse Poll — Wave Update
 
-Eclipse Poll is a privacy-first governance dApp ported from FHEpoll (Ethereum/ZAMA FHEVM) to Midnight Network using Compact zero-knowledge smart contracts. Individual votes are never revealed — only aggregate tallies are published on-chain. Live on Midnight Preprod.
+Eclipse Poll is a privacy-first governance dApp built on Midnight Network using Compact zero-knowledge smart contracts. Individual votes are never revealed — only aggregate tallies are published on-chain. Live on Midnight Preprod.
 
 **Contract:** `06fc9596f1c12928bd7904f927b995bf727713fa292679b300900ae607b1ba2f`
 **Demo:** [eclipse-poll.vercel.app](https://eclipse-poll.vercel.app)
