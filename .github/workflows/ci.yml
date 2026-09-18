@@ -33,16 +33,16 @@ jobs:
       - run: npm install
       - name: Create frontend .env
         run: |
-          cat > frontend/.env << EOF
+          cat > frontend/.env << 'EOF'
           VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS=test_placeholder
           VITE_MIDNIGHT_INDEXER_URI=https://indexer.preprod.midnight.network/api/v4/graphql
           VITE_MIDNIGHT_NETWORK_ID=preprod
           VITE_VERIFIER_URL=http://localhost:4000
           VITE_PINATA_GATEWAY=https://test.mypinata.cloud
           EOF
-      - name: Run frontend tests
-        run: npm test --workspace=frontend
       - name: Build frontend
         run: npm run build:contract:ts && npm run sync:zk && npm run build --workspace=frontend
+      - name: Run frontend tests (after build)
+        run: npm test --workspace=frontend
       - name: Verify build output
-        run: ls frontend/dist/index.html
+        run: ls frontend/dist/index.html && echo "✅ Build verified"
