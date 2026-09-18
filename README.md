@@ -6,6 +6,18 @@ Eclipse Poll is a privacy-preserving governance dApp built on **Midnight Network
 
 ---
 
+## Screenshots
+
+### Contract Compilation
+![Contract Compilation](https://eclipse-poll.vercel.app/compiled.png)
+*5 Compact ZK circuits compiled — castBinaryVote, castRankedVote, closePoll, createPoll, registerCommunity*
+
+### Contract Deployed on Midnight Network
+![Contract Deployed](https://eclipse-poll.vercel.app/deployed.png)
+*Contract `0x06fc9596...b1ba2f` deployed on Midnight Preprod — DEPLOYED status, castBinaryVote entry point visible*
+
+---
+
 ## Live Demo
 
 | Service | URL |
