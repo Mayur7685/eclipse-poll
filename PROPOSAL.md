@@ -52,3 +52,45 @@ We submit **Private Voting** as the Level 3 product proposal. The shipped surfac
 **Live demo:** [eclipse-poll.vercel.app](https://eclipse-poll.vercel.app)
 **Contract:** `06fc9596f1c12928bd7904f927b995bf727713fa292679b300900ae607b1ba2f` (Midnight Preprod)
 **Demo video:** [https://youtu.be/DmC5zzCP9_8](https://youtu.be/DmC5zzCP9_8)
+
+---
+
+## Future Upgrades (Level 4–6)
+
+### 1. Hierarchical Ranked Choice Voting (MDCT)
+
+Multi-layer governance where options have parent-child relationships — voters rank within each layer using a breadcrumb-navigated UI. New circuit `castHierarchicalVote(pollId)` accepts layered Borda weights via `getRankedWeightsByLayer()` witness. Cascade scores computed using Modified Descending Comparison Trees — the most expressive ranked-choice mechanism for complex DAO decisions (e.g. "Which proposal category?" → "Which specific implementation?").
+
+On-chain storage: `hierarchicalTallies: Map<PollId, Map<ParentId, Map<Uint<8>, Counter>>>`. Privacy: individual rankings per layer remain private witnesses; only aggregate cascade scores are public.
+
+### 2. On-Chain Credential Gating (Schnorr Attestation)
+
+Gate communities and polls by verifiable identity without revealing who is eligible. The attestation server verifies off-chain eligibility (X / Twitter follow, Discord server membership, GitHub activity, NFT ownership, ERC-20 token balance) and issues a **Schnorr signature** over `(credType, pollIdHash, userPkHash)`. The ZK voting circuit verifies the signature as a private witness — a vote is only counted if a valid attestation is included.
+
+This was implemented and removed in v1 due to a Midnight Compact compiler limitation: all circuit operations are inlined unconditionally into the ZK circuit, causing `ec_mul(attestationPk)` to execute even for FREE polls, panicking on uninitialized keys. The Level 4 fix uses **separate credentialed circuits** (`castCredentialedBinaryVote`, `castCredentialedRankedVote`) that only exist for gated polls — eliminating the conditional path issue entirely.
+
+Privacy property: the voter proves they hold a valid credential without revealing their social identity, wallet address, or which specific credential was used. The on-chain state reveals only that a valid credential was presented.
+
+### 3. Multi-Community Identity Aggregation
+
+A single ZK attestation covering membership across multiple requirements simultaneously — Ethereum token balance + Discord membership + GitHub org membership → one Schnorr signature encoding a `credentialBitmap`. The circuit checks the bitmap against the community's required flags. Users prove multi-dimensional eligibility in one ZK proof without revealing any individual identity signal.
+
+### 4. Identity Connectors (Social + On-Chain)
+
+Full server-side verification for:
+- **X / Twitter** — follow a specific account (via twitterapi.io, no official API key needed)
+- **Discord** — server membership or specific role (Discord bot token)
+- **GitHub** — account existence, org membership, repo contributions, minimum followers
+- **Telegram** — group/channel membership (bot token)
+- **ERC-20 token balance** — threshold check across Ethereum, Base, Arbitrum, Optimism, Polygon (via public RPC, no API key)
+- **NFT ownership** — ERC-721/1155 collection or specific token ID
+
+All connector infrastructure is already built in the codebase — frozen in v1 pending the credentialed circuit separation above.
+
+### 5. Private Mid-Poll Snapshots
+
+Poll creators request an encrypted tally snapshot while the poll is still open. The snapshot is decrypted only for the creator via a per-creator ZK proof. Other observers see only that a snapshot was taken — not the intermediate counts. This enables real-time governance dashboards for proposal authors without compromising voter privacy before close.
+
+### 6. DAO Treasury Integration
+
+Community treasury managed via Midnight ZK — spending proposals voted on-chain with private ballots, execution triggered by threshold. Budget amounts and individual vote choices stay private; only the pass/fail outcome and execution are public.
