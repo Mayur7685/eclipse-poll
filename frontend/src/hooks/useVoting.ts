@@ -212,14 +212,67 @@ export function useVoting() {
     setError(null);
   }, []);
 
+  // ── Approval vote — select all that apply ─────────────────────────────────
+  const castApproval = useCallback(
+    async (
+      _contractAddress: string,
+      pollIdBytes: Uint8Array,
+      approvedIndices: number[],  // indices of approved options (0-based)
+    ) => {
+      if (!session || !address) { setError('Wallet not connected'); return; }
+      setStatus('proving');
+      setError(null);
+      setTxHash(null);
+
+      try {
+        const masterAddress = await getOrDeployMasterContract(session);
+        const psp = session.providers.privateStateProvider;
+        psp.setContractAddress(masterAddress);
+        const existing = (await psp.get(PRIVATE_STATE_ID) as any) ?? {
+          userSecretKey: getOrCreateUserSecretKey(),
+          voteChoice: 0n,
+          rankedWeights: [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+        };
+        // Build boolean approval vector
+        const approvalChoices = Array(8).fill(false);
+        approvedIndices.forEach(idx => { if (idx >= 0 && idx < 8) approvalChoices[idx] = true; });
+        await psp.set(PRIVATE_STATE_ID, { ...existing, approvalChoices });
+
+        const result = await callCircuitOnMasterContract(
+          session,
+          'castApprovalVote',
+          [pollIdBytes],
+        );
+
+        const resolvedHash = result.txHash ?? null;
+        const pollIdHex = Buffer.from(pollIdBytes).toString('hex');
+        markVoted(pollIdHex, address);
+        void saveEncryptedVote(address, pollIdHex, {
+          approvedIndices,
+          poll_type: 'approval',
+          votedAt: Date.now(),
+        });
+        setTxHash(resolvedHash);
+        setStatus('done');
+        return resolvedHash;
+      } catch (e: any) {
+        console.error('Approval vote failed:', e);
+        setError(e.message || String(e));
+        setStatus('error');
+      }
+    },
+    [session, address],
+  );
+
   return {
     castVote,
     castSimple,
     castSurvey,
+    castApproval,
     status,
     txHash,
     error,
     reset,
-    isEncrypting: status === 'proving', // keep compat with old FHEpoll name
+    isEncrypting: status === 'proving',
   };
 }

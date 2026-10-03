@@ -77,6 +77,7 @@ export function createInitialPrivateState(userSecretKey?: Uint8Array): EclipsePo
     userSecretKey: sk,
     voteChoice: 0n,
     rankedWeights: [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+    approvalChoices: [false, false, false, false, false, false, false, false],
   };
 }
 

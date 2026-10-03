@@ -138,7 +138,7 @@ export default function CreatePollWizard() {
         community_id: communityId,
         title,
         description,
-        poll_type: pollType === PollType.HIERARCHICAL ? 'hierarchical' : pollType === PollType.RANKED_CHOICE ? 'flat' : 'simple',
+        poll_type: pollType === PollType.HIERARCHICAL ? 'hierarchical' : pollType === PollType.RANKED_CHOICE ? 'flat' : pollType === PollType.APPROVAL ? 'approval' : 'simple',
         cred_type: credType,
         options,
         creator: address || session.unshieldedAddress,
@@ -255,7 +255,7 @@ export default function CreatePollWizard() {
 
             <div>
               <label className={labelCls}>Poll Type</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setPollType(PollType.SIMPLE)}
@@ -267,7 +267,7 @@ export default function CreatePollWizard() {
                 >
                   <p className="text-sm font-bold flex items-center gap-1.5"><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg> Single Choice</p>
                   <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                    Voters select a single option via radio buttons (Yes/No or Multiple Options).
+                    Pick one option. Simple yes/no or multiple options.
                   </p>
                 </button>
                 <button
@@ -281,7 +281,21 @@ export default function CreatePollWizard() {
                 >
                   <p className="text-sm font-bold flex items-center gap-1.5"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Ranked Choice</p>
                   <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                    Voters rank multiple options in order of preference (1st, 2nd, 3rd choice).
+                    Rank options by preference. Borda count scoring.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPollType(PollType.APPROVAL)}
+                  className={`p-4 rounded-xl border text-left transition-all ${
+                    pollType === PollType.APPROVAL
+                      ? 'border-[#0070F3] bg-blue-50/50 text-[#0070F3] shadow-sm'
+                      : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
+                  }`}
+                >
+                  <p className="text-sm font-bold flex items-center gap-1.5"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg> Approval</p>
+                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                    Select all that apply. Every approved option gets +1.
                   </p>
                 </button>
               </div>

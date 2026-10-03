@@ -1,6 +1,10 @@
 import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 
-export enum PollType { SIMPLE = 0, RANKED_CHOICE = 1, HIERARCHICAL = 2 }
+export enum PollType { SIMPLE = 0,
+                       RANKED_CHOICE = 1,
+                       HIERARCHICAL = 2,
+                       APPROVAL = 3
+}
 
 export enum CredentialType { FREE = 0, ALLOWLIST = 1, SOCIAL_OAUTH = 2 }
 
@@ -31,6 +35,7 @@ export type Witnesses<PS> = {
   getUserSecret(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, UserSecretKey];
   getVoteChoice(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   getRankedWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
+  getApprovalChoices(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, boolean[]];
 }
 
 export type ImpureCircuits<PS> = {
@@ -46,6 +51,8 @@ export type ImpureCircuits<PS> = {
              endTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   castBinaryVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castRankedVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castApprovalVote(context: __compactRuntime.CircuitContext<PS>,
+                   pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -62,6 +69,8 @@ export type ProvableCircuits<PS> = {
              endTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   castBinaryVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castRankedVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castApprovalVote(context: __compactRuntime.CircuitContext<PS>,
+                   pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -81,6 +90,8 @@ export type Circuits<PS> = {
              endTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   castBinaryVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castRankedVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castApprovalVote(context: __compactRuntime.CircuitContext<PS>,
+                   pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 

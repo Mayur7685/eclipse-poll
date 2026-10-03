@@ -3,7 +3,7 @@ pragma language_version >= 0.22 && <= 0.23;
 import CompactStandardLibrary;
 
 // --- Enums ---
-export enum PollType { SIMPLE, RANKED_CHOICE, HIERARCHICAL }
+export enum PollType { SIMPLE, RANKED_CHOICE, HIERARCHICAL, APPROVAL }
 export enum CredentialType { FREE, ALLOWLIST, SOCIAL_OAUTH }
 
 // --- Nominal Types (domain isolation) ---
@@ -46,6 +46,7 @@ export ledger tallies: Map<PollId, Map<Uint<8>, Counter>>;
 witness getUserSecret(): UserSecretKey;
 witness getVoteChoice(): Uint<8>;
 witness getRankedWeights(): Vector<8, Uint<8>>;
+witness getApprovalChoices(): Vector<8, Boolean>;
 
 // --- Pure Helper Circuits ---
 pure circuit deriveUserPublicKey(sk: UserSecretKey, secretPin: Uint<16>): UserPublicKey {
@@ -167,6 +168,27 @@ export circuit castRankedVote(pollId: PollId): [] {
       tallies.lookup(pid).lookup(disclose(i as Uint<8>)).increment(
         disclose(weights[i]) as Uint<16>
       );
+    }
+  }
+}
+
+export circuit castApprovalVote(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  assert(!config.isClosed, "Poll closed");
+  assert(config.pollType == PollType.APPROVAL, "Not an approval poll");
+
+  const sk = getUserSecret();
+  const nul = computeNullifier(sk, pollId);
+  assert(!nullifiers.member(disclose(nul)), "Already voted");
+  nullifiers.insert(disclose(nul));
+
+  // Each approved option gets +1 — voter can approve any subset
+  const choices = getApprovalChoices();
+  for (const i of 0..8) {
+    if ((i as Uint<8>) < config.optionCount && disclose(choices[i])) {
+      tallies.lookup(pid).lookup(disclose(i as Uint<8>)).increment(1);
     }
   }
 }

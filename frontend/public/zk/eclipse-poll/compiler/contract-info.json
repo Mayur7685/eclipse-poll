@@ -65,7 +65,8 @@
             "elements": [
               "SIMPLE",
               "RANKED_CHOICE",
-              "HIERARCHICAL"
+              "HIERARCHICAL",
+              "APPROVAL"
             ]
           }
         },
@@ -149,6 +150,29 @@
       }
     },
     {
+      "name": "castApprovalVote",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "closePoll",
       "pure": false,
       "proof": true,
@@ -205,6 +229,18 @@
         "type": {
           "type-name": "Uint",
           "maxval": 255
+        }
+      }
+    },
+    {
+      "name": "getApprovalChoices",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Vector",
+        "length": 8,
+        "type": {
+          "type-name": "Boolean"
         }
       }
     }
@@ -308,7 +344,8 @@
               "elements": [
                 "SIMPLE",
                 "RANKED_CHOICE",
-                "HIERARCHICAL"
+                "HIERARCHICAL",
+                "APPROVAL"
               ]
             }
           },

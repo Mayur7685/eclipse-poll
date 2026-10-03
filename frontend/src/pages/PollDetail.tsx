@@ -81,7 +81,7 @@ function Stepper({ step }: { step: number }) {
 export default function PollDetail() {
   const { communityId, pollId } = useParams<{ communityId: string; pollId: string }>()
   const { address, isConnected } = useWallet()
-  const { castVote, castSimple, status, txHash: txId, error } = useVoting()
+  const { castVote, castSimple, castApproval, status, txHash: txId, error } = useVoting()
   const toast = useToast()
 
   const [poll, setPoll]             = useState<Poll | null>(null)
@@ -99,6 +99,7 @@ export default function PollDetail() {
   // MDCT per-layer rankings for hierarchical polls: Map<parentId, VoteRanking>
   const [layerRankings, setLayerRankings] = useState<Map<number, VoteRanking>>(new Map())
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
+  const [approvedOptions, setApprovedOptions] = useState<Set<number>>(new Set())
   const [showConfirm, setShowConfirm] = useState(false)
   const [noCredential, setNoCredential] = useState<'missing' | 'sync' | null>(null)
 
@@ -161,7 +162,9 @@ export default function PollDetail() {
           ? 'hierarchical'
           : onChainPoll?.pollType === 1 || backendPoll?.poll_type === 'flat'
           ? 'flat'
-          : onChainPoll?.pollType === 3 || backendPoll?.poll_type === 'survey'
+          : onChainPoll?.pollType === 3 || backendPoll?.poll_type === 'approval'
+          ? 'approval'
+          : onChainPoll?.pollType === 4 || backendPoll?.poll_type === 'survey'
           ? 'survey'
           : 'simple',
       })
@@ -231,6 +234,7 @@ export default function PollDetail() {
     setBreadcrumb(prev => prev.slice(0, index + 1))
   }
 
+  const hasApproved = poll?.poll_type === 'approval' ? approvedOptions.size > 0 : false
   const hasRanked = poll?.poll_type === 'hierarchical'
     ? Array.from(layerRankings.values()).some(r => Object.values(r).some(v => v > 0))
     : Object.values(ranking).some(r => r > 0)
@@ -267,8 +271,9 @@ export default function PollDetail() {
       }
       await castVote('', pollIdBytes, merged, poll!.options.length)
     } else if (type === 'flat') {
-      // Standard flat ranked choice vote
       await castVote('', pollIdBytes, ranking, poll!.options.length)
+    } else if (type === 'approval') {
+      await castApproval('', pollIdBytes, Array.from(approvedOptions))
     }
   }
 
@@ -373,7 +378,7 @@ export default function PollDetail() {
                 {poll.title}
               </h1>
               <p className="text-xs text-gray-400 mt-0.5">
-                {poll.poll_type === 'simple' ? 'Pick your choice' : poll.poll_type === 'hierarchical' ? 'Rank by layer' : tab === 'browse' ? 'Browse options' : 'Rank your choices'}
+                {poll.poll_type === 'simple' ? 'Pick your choice' : poll.poll_type === 'approval' ? 'Select all that apply' : poll.poll_type === 'hierarchical' ? 'Rank by layer' : tab === 'browse' ? 'Browse options' : 'Rank your choices'}
               </p>
             </div>
             <Link to={`/communities/${communityId}/polls/${pollId}/results`}
@@ -519,6 +524,48 @@ export default function PollDetail() {
                   Select an option to enable voting.
                 </div>
               </div>
+            ) : poll.poll_type === 'approval' ? (
+              /* Approval poll — checkbox multi-select */
+              <div className="border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm">
+                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
+                  <p className="text-xs text-gray-400 font-medium">Select all that apply</p>
+                  {approvedOptions.size > 0 && (
+                    <span className="text-xs font-semibold text-[#0070F3]">{approvedOptions.size} selected</span>
+                  )}
+                </div>
+                <div className="p-3 flex flex-col gap-1.5">
+                  {poll.options.map((opt, idx) => {
+                    const checked = approvedOptions.has(idx)
+                    return (
+                      <button key={opt.option_id} type="button"
+                        onClick={() => {
+                          setApprovedOptions(prev => {
+                            const next = new Set(prev)
+                            if (next.has(idx)) next.delete(idx); else next.add(idx)
+                            return next
+                          })
+                        }}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all ${
+                          checked ? 'border-[#0070F3] bg-blue-50' : 'border-gray-100 hover:border-gray-200'
+                        }`}>
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          checked ? 'border-[#0070F3] bg-[#0070F3]' : 'border-gray-300'
+                        }`}>
+                          {checked && (
+                            <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">{opt.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="bg-[#0070F3] text-white px-5 py-3 text-xs font-medium">
+                  Approve any number of options. Each approved option gets +1 vote.
+                </div>
+              </div>
             ) : (
               <div className="border border-gray-100 rounded-xl overflow-hidden bg-white flex flex-col shadow-sm">
                 {/* Same breadcrumb nav as Browse so user can drill into sub-options */}
@@ -600,7 +647,7 @@ export default function PollDetail() {
                     onClick={() => setShowConfirm(true)}
                     disabled={
                       alreadyVoted ||
-                      !(poll?.poll_type === 'simple' ? selectedOption !== null : hasRanked) ||
+                      !(poll?.poll_type === 'simple' ? selectedOption !== null : poll?.poll_type === 'approval' ? hasApproved : hasRanked) ||
                       status === 'proving' ||
                       status === 'confirming' ||
                       status === 'attesting'
@@ -618,6 +665,8 @@ export default function PollDetail() {
                       ? 'Waiting for confirmation…'
                       : status === 'attesting'
                       ? 'Checking credentials…'
+                      : poll?.poll_type === 'approval' && approvedOptions.size === 0
+                      ? 'Select at least 1 option'
                       : 'Submit Vote'
                     }
                   </button>

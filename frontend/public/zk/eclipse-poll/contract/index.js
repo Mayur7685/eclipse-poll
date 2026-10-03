@@ -6,6 +6,7 @@ export var PollType;
   PollType[PollType['SIMPLE'] = 0] = 'SIMPLE';
   PollType[PollType['RANKED_CHOICE'] = 1] = 'RANKED_CHOICE';
   PollType[PollType['HIERARCHICAL'] = 2] = 'HIERARCHICAL';
+  PollType[PollType['APPROVAL'] = 3] = 'APPROVAL';
 })(PollType || (PollType = {}));
 
 export var CredentialType;
@@ -17,7 +18,7 @@ export var CredentialType;
 
 const _descriptor_0 = new __compactRuntime.CompactTypeBytes(32);
 
-const _descriptor_1 = new __compactRuntime.CompactTypeEnum(2, 1);
+const _descriptor_1 = new __compactRuntime.CompactTypeEnum(3, 1);
 
 const _descriptor_2 = new __compactRuntime.CompactTypeEnum(2, 1);
 
@@ -70,9 +71,11 @@ const _descriptor_8 = new _CommunityOnChainConfig_0();
 
 const _descriptor_9 = new __compactRuntime.CompactTypeVector(8, _descriptor_3);
 
-const _descriptor_10 = new __compactRuntime.CompactTypeVector(3, _descriptor_0);
+const _descriptor_10 = new __compactRuntime.CompactTypeVector(8, _descriptor_5);
 
-const _descriptor_11 = new __compactRuntime.CompactTypeVector(2, _descriptor_0);
+const _descriptor_11 = new __compactRuntime.CompactTypeVector(3, _descriptor_0);
+
+const _descriptor_12 = new __compactRuntime.CompactTypeVector(2, _descriptor_0);
 
 class _Either_0 {
   alignment() {
@@ -90,9 +93,9 @@ class _Either_0 {
   }
 }
 
-const _descriptor_12 = new _Either_0();
+const _descriptor_13 = new _Either_0();
 
-const _descriptor_13 = new __compactRuntime.CompactTypeUnsignedInteger(340282366920938463463374607431768211455n, 16);
+const _descriptor_14 = new __compactRuntime.CompactTypeUnsignedInteger(340282366920938463463374607431768211455n, 16);
 
 class _ContractAddress_0 {
   alignment() {
@@ -108,7 +111,7 @@ class _ContractAddress_0 {
   }
 }
 
-const _descriptor_14 = new _ContractAddress_0();
+const _descriptor_15 = new _ContractAddress_0();
 
 export class Contract {
   witnesses;
@@ -129,6 +132,9 @@ export class Contract {
     if (typeof(witnesses_0.getRankedWeights) !== 'function') {
       throw new __compactRuntime.CompactError('first (witnesses) argument to Contract constructor does not contain a function-valued field named getRankedWeights');
     }
+    if (typeof(witnesses_0.getApprovalChoices) !== 'function') {
+      throw new __compactRuntime.CompactError('first (witnesses) argument to Contract constructor does not contain a function-valued field named getApprovalChoices');
+    }
     this.witnesses = witnesses_0;
     this.circuits = {
       registerCommunity: (...args_1) => {
@@ -142,28 +148,28 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('registerCommunity',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 80 char 1',
+                                     'eclipse_poll.compact line 81 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(communityId_0.buffer instanceof ArrayBuffer && communityId_0.BYTES_PER_ELEMENT === 1 && communityId_0.length === 32)) {
           __compactRuntime.typeError('registerCommunity',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 80 char 1',
+                                     'eclipse_poll.compact line 81 char 1',
                                      'Bytes<32>',
                                      communityId_0)
         }
         if (!(configHash_0.buffer instanceof ArrayBuffer && configHash_0.BYTES_PER_ELEMENT === 1 && configHash_0.length === 32)) {
           __compactRuntime.typeError('registerCommunity',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 80 char 1',
+                                     'eclipse_poll.compact line 81 char 1',
                                      'Bytes<32>',
                                      configHash_0)
         }
         if (!(typeof(credType_0) === 'number' && credType_0 >= 0 && credType_0 <= 2)) {
           __compactRuntime.typeError('registerCommunity',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 80 char 1',
+                                     'eclipse_poll.compact line 81 char 1',
                                      'Enum<CredentialType, FREE, ALLOWLIST, SOCIAL_OAUTH>',
                                      credType_0)
         }
@@ -198,42 +204,42 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('createPoll',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 98 char 1',
+                                     'eclipse_poll.compact line 99 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
           __compactRuntime.typeError('createPoll',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 98 char 1',
+                                     'eclipse_poll.compact line 99 char 1',
                                      'Bytes<32>',
                                      pollId_0)
         }
-        if (!(typeof(pollType_0) === 'number' && pollType_0 >= 0 && pollType_0 <= 2)) {
+        if (!(typeof(pollType_0) === 'number' && pollType_0 >= 0 && pollType_0 <= 3)) {
           __compactRuntime.typeError('createPoll',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 98 char 1',
-                                     'Enum<PollType, SIMPLE, RANKED_CHOICE, HIERARCHICAL>',
+                                     'eclipse_poll.compact line 99 char 1',
+                                     'Enum<PollType, SIMPLE, RANKED_CHOICE, HIERARCHICAL, APPROVAL>',
                                      pollType_0)
         }
         if (!(typeof(credType_0) === 'number' && credType_0 >= 0 && credType_0 <= 2)) {
           __compactRuntime.typeError('createPoll',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 98 char 1',
+                                     'eclipse_poll.compact line 99 char 1',
                                      'Enum<CredentialType, FREE, ALLOWLIST, SOCIAL_OAUTH>',
                                      credType_0)
         }
         if (!(typeof(optionCount_0) === 'bigint' && optionCount_0 >= 0n && optionCount_0 <= 255n)) {
           __compactRuntime.typeError('createPoll',
                                      'argument 4 (argument 5 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 98 char 1',
+                                     'eclipse_poll.compact line 99 char 1',
                                      'Uint<0..256>',
                                      optionCount_0)
         }
         if (!(typeof(endTime_0) === 'bigint' && endTime_0 >= 0n && endTime_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('createPoll',
                                      'argument 5 (argument 6 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 98 char 1',
+                                     'eclipse_poll.compact line 99 char 1',
                                      'Uint<0..18446744073709551616>',
                                      endTime_0)
         }
@@ -266,14 +272,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('castBinaryVote',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 132 char 1',
+                                     'eclipse_poll.compact line 133 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
           __compactRuntime.typeError('castBinaryVote',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 132 char 1',
+                                     'eclipse_poll.compact line 133 char 1',
                                      'Bytes<32>',
                                      pollId_0)
         }
@@ -302,14 +308,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('castRankedVote',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 151 char 1',
+                                     'eclipse_poll.compact line 152 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
           __compactRuntime.typeError('castRankedVote',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 151 char 1',
+                                     'eclipse_poll.compact line 152 char 1',
                                      'Bytes<32>',
                                      pollId_0)
         }
@@ -329,6 +335,42 @@ export class Contract {
         partialProofData.output = { value: [], alignment: [] };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
+      castApprovalVote: (...args_1) => {
+        if (args_1.length !== 2) {
+          throw new __compactRuntime.CompactError(`castApprovalVote: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
+        }
+        const contextOrig_0 = args_1[0];
+        const pollId_0 = args_1[1];
+        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
+          __compactRuntime.typeError('castApprovalVote',
+                                     'argument 1 (as invoked from Typescript)',
+                                     'eclipse_poll.compact line 175 char 1',
+                                     'CircuitContext',
+                                     contextOrig_0)
+        }
+        if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
+          __compactRuntime.typeError('castApprovalVote',
+                                     'argument 1 (argument 2 as invoked from Typescript)',
+                                     'eclipse_poll.compact line 175 char 1',
+                                     'Bytes<32>',
+                                     pollId_0)
+        }
+        const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
+        const partialProofData = {
+          input: {
+            value: _descriptor_0.toValue(pollId_0),
+            alignment: _descriptor_0.alignment()
+          },
+          output: undefined,
+          publicTranscript: [],
+          privateTranscriptOutputs: []
+        };
+        const result_0 = this._castApprovalVote_0(context,
+                                                  partialProofData,
+                                                  pollId_0);
+        partialProofData.output = { value: [], alignment: [] };
+        return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
+      },
       closePoll: (...args_1) => {
         if (args_1.length !== 2) {
           throw new __compactRuntime.CompactError(`closePoll: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
@@ -338,14 +380,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('closePoll',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 174 char 1',
+                                     'eclipse_poll.compact line 196 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
           __compactRuntime.typeError('closePoll',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 174 char 1',
+                                     'eclipse_poll.compact line 196 char 1',
                                      'Bytes<32>',
                                      pollId_0)
         }
@@ -369,6 +411,7 @@ export class Contract {
       createPoll: this.circuits.createPoll,
       castBinaryVote: this.circuits.castBinaryVote,
       castRankedVote: this.circuits.castRankedVote,
+      castApprovalVote: this.circuits.castApprovalVote,
       closePoll: this.circuits.closePoll
     };
     this.provableCircuits = {
@@ -376,6 +419,7 @@ export class Contract {
       createPoll: this.circuits.createPoll,
       castBinaryVote: this.circuits.castBinaryVote,
       castRankedVote: this.circuits.castRankedVote,
+      castApprovalVote: this.circuits.castApprovalVote,
       closePoll: this.circuits.closePoll
     };
   }
@@ -409,6 +453,7 @@ export class Contract {
     state_0.setOperation('createPoll', new __compactRuntime.ContractOperation());
     state_0.setOperation('castBinaryVote', new __compactRuntime.ContractOperation());
     state_0.setOperation('castRankedVote', new __compactRuntime.ContractOperation());
+    state_0.setOperation('castApprovalVote', new __compactRuntime.ContractOperation());
     state_0.setOperation('closePoll', new __compactRuntime.ContractOperation());
     const context = __compactRuntime.createCircuitContext(__compactRuntime.dummyContractAddress(), constructorContext_0.initialZswapLocalState.coinPublicKey, state_0.data, constructorContext_0.initialPrivateState);
     const partialProofData = {
@@ -501,11 +546,11 @@ export class Contract {
     }
   }
   _persistentHash_0(value_0) {
-    const result_0 = __compactRuntime.persistentHash(_descriptor_11, value_0);
+    const result_0 = __compactRuntime.persistentHash(_descriptor_12, value_0);
     return result_0;
   }
   _persistentHash_1(value_0) {
-    const result_0 = __compactRuntime.persistentHash(_descriptor_10, value_0);
+    const result_0 = __compactRuntime.persistentHash(_descriptor_11, value_0);
     return result_0;
   }
   _persistentHash_2(value_0) {
@@ -560,6 +605,23 @@ export class Contract {
     partialProofData.privateTranscriptOutputs.push({
       value: _descriptor_9.toValue(result_0),
       alignment: _descriptor_9.alignment()
+    });
+    return result_0;
+  }
+  _getApprovalChoices_0(context, partialProofData) {
+    const witnessContext_0 = __compactRuntime.createWitnessContext(ledger(context.currentQueryContext.state), context.currentPrivateState, context.currentQueryContext.address);
+    const [nextPrivateState_0, result_0] = this.witnesses.getApprovalChoices(witnessContext_0);
+    context.currentPrivateState = nextPrivateState_0;
+    if (!(Array.isArray(result_0) && result_0.length === 8 && result_0.every((t) => typeof(t) === 'boolean'))) {
+      __compactRuntime.typeError('getApprovalChoices',
+                                 'return value',
+                                 'eclipse_poll.compact line 49 char 1',
+                                 'Vector<8, Boolean>',
+                                 result_0)
+    }
+    partialProofData.privateTranscriptOutputs.push({
+      value: _descriptor_10.toValue(result_0),
+      alignment: _descriptor_10.alignment()
     });
     return result_0;
   }
@@ -959,6 +1021,121 @@ export class Contract {
                    [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n]);
     return [];
   }
+  _castApprovalVote_0(context, partialProofData, pollId_0) {
+    const pid_0 = pollId_0;
+    __compactRuntime.assert(_descriptor_5.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                                      partialProofData,
+                                                                                      [
+                                                                                       { dup: { n: 0 } },
+                                                                                       { idx: { cached: false,
+                                                                                                pushPath: false,
+                                                                                                path: [
+                                                                                                       { tag: 'value',
+                                                                                                         value: { value: _descriptor_3.toValue(2n),
+                                                                                                                  alignment: _descriptor_3.alignment() } }] } },
+                                                                                       { push: { storage: false,
+                                                                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(pid_0),
+                                                                                                                                              alignment: _descriptor_0.alignment() }).encode() } },
+                                                                                       'member',
+                                                                                       { popeq: { cached: true,
+                                                                                                  result: undefined } }]).value),
+                            'Poll not found');
+    const config_0 = _descriptor_6.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                               partialProofData,
+                                                                               [
+                                                                                { dup: { n: 0 } },
+                                                                                { idx: { cached: false,
+                                                                                         pushPath: false,
+                                                                                         path: [
+                                                                                                { tag: 'value',
+                                                                                                  value: { value: _descriptor_3.toValue(2n),
+                                                                                                           alignment: _descriptor_3.alignment() } }] } },
+                                                                                { idx: { cached: false,
+                                                                                         pushPath: false,
+                                                                                         path: [
+                                                                                                { tag: 'value',
+                                                                                                  value: { value: _descriptor_0.toValue(pid_0),
+                                                                                                           alignment: _descriptor_0.alignment() } }] } },
+                                                                                { popeq: { cached: false,
+                                                                                           result: undefined } }]).value);
+    __compactRuntime.assert(!config_0.isClosed, 'Poll closed');
+    __compactRuntime.assert(config_0.pollType === 3, 'Not an approval poll');
+    const sk_0 = this._getUserSecret_0(context, partialProofData);
+    const nul_0 = this._computeNullifier_0(sk_0, pollId_0);
+    __compactRuntime.assert(!_descriptor_5.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                                       partialProofData,
+                                                                                       [
+                                                                                        { dup: { n: 0 } },
+                                                                                        { idx: { cached: false,
+                                                                                                 pushPath: false,
+                                                                                                 path: [
+                                                                                                        { tag: 'value',
+                                                                                                          value: { value: _descriptor_3.toValue(4n),
+                                                                                                                   alignment: _descriptor_3.alignment() } }] } },
+                                                                                        { push: { storage: false,
+                                                                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(nul_0),
+                                                                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
+                                                                                        'member',
+                                                                                        { popeq: { cached: true,
+                                                                                                   result: undefined } }]).value),
+                            'Already voted');
+    __compactRuntime.queryLedgerState(context,
+                                      partialProofData,
+                                      [
+                                       { idx: { cached: false,
+                                                pushPath: true,
+                                                path: [
+                                                       { tag: 'value',
+                                                         value: { value: _descriptor_3.toValue(4n),
+                                                                  alignment: _descriptor_3.alignment() } }] } },
+                                       { push: { storage: false,
+                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(nul_0),
+                                                                                              alignment: _descriptor_0.alignment() }).encode() } },
+                                       { push: { storage: true,
+                                                 value: __compactRuntime.StateValue.newNull().encode() } },
+                                       { ins: { cached: false, n: 1 } },
+                                       { ins: { cached: true, n: 1 } }]);
+    const choices_0 = this._getApprovalChoices_0(context, partialProofData);
+    this._folder_2(context,
+                   partialProofData,
+                   ((context, partialProofData, t_0, i_0) =>
+                    {
+                      let t_1;
+                      if ((t_1 = i_0, t_1 < config_0.optionCount)
+                          &&
+                          choices_0[i_0])
+                      {
+                        const tmp_0 = 1n;
+                        const tmp_1 = i_0;
+                        __compactRuntime.queryLedgerState(context,
+                                                          partialProofData,
+                                                          [
+                                                           { idx: { cached: false,
+                                                                    pushPath: true,
+                                                                    path: [
+                                                                           { tag: 'value',
+                                                                             value: { value: _descriptor_3.toValue(5n),
+                                                                                      alignment: _descriptor_3.alignment() } },
+                                                                           { tag: 'value',
+                                                                             value: { value: _descriptor_0.toValue(pid_0),
+                                                                                      alignment: _descriptor_0.alignment() } },
+                                                                           { tag: 'value',
+                                                                             value: { value: _descriptor_3.toValue(tmp_1),
+                                                                                      alignment: _descriptor_3.alignment() } }] } },
+                                                           { addi: { immediate: parseInt(__compactRuntime.valueToBigInt(
+                                                                                  { value: _descriptor_7.toValue(tmp_0),
+                                                                                    alignment: _descriptor_7.alignment() }
+                                                                                    .value
+                                                                                )) } },
+                                                           { ins: { cached: true,
+                                                                    n: 3 } }]);
+                      }
+                      return t_0;
+                    }),
+                   [],
+                   [0n, 1n, 2n, 3n, 4n, 5n, 6n, 7n]);
+    return [];
+  }
   _closePoll_0(context, partialProofData, pollId_0) {
     const pid_0 = pollId_0;
     __compactRuntime.assert(_descriptor_5.fromValue(__compactRuntime.queryLedgerState(context,
@@ -1030,6 +1207,10 @@ export class Contract {
     return x;
   }
   _folder_1(context, partialProofData, f, x, a0) {
+    for (let i = 0; i < 8; i++) { x = f(context, partialProofData, x, a0[i]); }
+    return x;
+  }
+  _folder_2(context, partialProofData, f, x, a0) {
     for (let i = 0; i < 8; i++) { x = f(context, partialProofData, x, a0[i]); }
     return x;
   }
@@ -1595,7 +1776,8 @@ const _emptyContext = {
 const _dummyContract = new Contract({
   getUserSecret: (...args) => undefined,
   getVoteChoice: (...args) => undefined,
-  getRankedWeights: (...args) => undefined
+  getRankedWeights: (...args) => undefined,
+  getApprovalChoices: (...args) => undefined
 });
 export const pureCircuits = {};
 export const contractReferenceLocations =
