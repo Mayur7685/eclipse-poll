@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useWallet } from '../hooks/useWallet';
+import { useContractSubscription } from '../hooks/useContractSubscription';
 import { fetchContractLedger } from '../lib/eclipse';
 import { getCommunityById } from '../lib/verifier';
 import { fromHex } from '../lib/midnight';
@@ -62,8 +63,16 @@ export default function PollResults() {
   const [optionCount, setOptionCount] = useState(0);
   const [pollStatus, setPollStatus] = useState<'active' | 'closed' | 'expired'>('active');
   const [endTime, setEndTime] = useState<number | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0); // increments on live update
 
   const MASTER_CONTRACT = import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS as string | undefined;
+
+  // Real-time tally updates via Midnight Indexer WebSocket
+  useContractSubscription({
+    contractAddress: MASTER_CONTRACT ?? null,
+    onUpdate: () => setRefreshKey(k => k + 1),
+    enabled: pollStatus === 'active', // only subscribe when poll is open
+  });
 
   useEffect(() => {
     if (!pollId || !communityId) return;
@@ -124,7 +133,7 @@ export default function PollResults() {
 
       setTallies(list);
     }).finally(() => setLoading(false));
-  }, [pollId, communityId, session, MASTER_CONTRACT]);
+  }, [pollId, communityId, session, MASTER_CONTRACT, refreshKey]);
 
   const totalVotes = tallies.reduce((sum, t) => sum + Number(t.count), 0);
   const title = pollTitle || `Poll ${pollId?.slice(0, 10)}…`;
