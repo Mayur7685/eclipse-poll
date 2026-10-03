@@ -197,14 +197,17 @@ export type ScopedSnapshotMap = Map<number, ScopedSnapshot>
 // ─── Posts ────────────────────────────────────────────────────────────────────
 
 export interface PostMetadata {
-  post_id: string
+  id: string                   // post UUID from server
+  post_id?: string             // legacy alias
   community_id: string
   author: string               // Midnight unshielded address
   title: string
   body: string
+  image_url?: string | null    // optional image URL
   ipfs_cid?: string
-  content_hash: string
-  created_at_block: number
+  content_hash?: string
+  created_at: number           // Unix ms timestamp
+  created_at_block?: number
 }
 
 // ─── Quests ───────────────────────────────────────────────────────────────────

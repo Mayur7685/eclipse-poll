@@ -774,6 +774,95 @@ app.get(['/key-backup/:address', '/api/key-backup/:address'], async (req: Reques
   } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
+
+// ── Posts ─────────────────────────────────────────────────────────────────────
+// Community posts stored in communities.json alongside poll data.
+// Each post: { id, community_id, title, body, author, created_at, image_url? }
+
+import { randomUUID } from 'crypto';
+
+app.get(['/communities/:id/posts', '/api/communities/:id/posts'], (req: Request, res: Response) => {
+  const community = communitiesStore.find(c => c.community_id === req.params.id);
+  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
+  res.json((community as any).posts_feed ?? []);
+});
+
+app.post(['/communities/:id/posts', '/api/communities/:id/posts'], writeLimiter, (req: Request, res: Response) => {
+  const { title, body, author, image_url } = req.body as { title: string; body: string; author: string; image_url?: string };
+  if (!title?.trim() || !body?.trim() || !author?.trim()) {
+    res.status(400).json({ error: 'title, body, author required' }); return;
+  }
+  const community = communitiesStore.find(c => c.community_id === req.params.id);
+  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
+  const post = {
+    id: randomUUID(),
+    community_id: req.params.id,
+    title: title.slice(0, 200),
+    body: body.slice(0, 5000),
+    author,
+    image_url: image_url?.slice(0, 500),
+    created_at: Date.now(),
+  };
+  if (!(community as any).posts_feed) (community as any).posts_feed = [];
+  (community as any).posts_feed.unshift(post);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(communitiesStore, null, 2));
+  res.json(post);
+});
+
+app.delete(['/communities/:id/posts/:postId', '/api/communities/:id/posts/:postId'], (req: Request, res: Response) => {
+  const community = communitiesStore.find(c => c.community_id === req.params.id);
+  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
+  const before = ((community as any).posts_feed ?? []).length;
+  (community as any).posts_feed = ((community as any).posts_feed ?? []).filter((p: any) => p.id !== req.params.postId);
+  if ((community as any).posts_feed.length === before) { res.status(404).json({ error: 'Post not found' }); return; }
+  fs.writeFileSync(DATA_FILE, JSON.stringify(communitiesStore, null, 2));
+  res.json({ ok: true });
+});
+
+
+// ── Community Posts ───────────────────────────────────────────────────────────
+// Posts stored in communities.json under posts_feed array per community.
+
+app.get(['/communities/:id/posts', '/api/communities/:id/posts'], (req: Request, res: Response) => {
+  const community = communitiesStore.find((c: any) => c.community_id === req.params.id);
+  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
+  res.json((community as any).posts_feed ?? []);
+});
+
+app.post(['/communities/:id/posts', '/api/communities/:id/posts'], writeLimiter, (req: Request, res: Response) => {
+  const { title, body, author, image_url } = req.body as { title?: string; body?: string; author?: string; image_url?: string };
+  if (!title?.trim() || !body?.trim() || !author?.trim()) {
+    res.status(400).json({ error: 'title, body, author required' }); return;
+  }
+  const community = communitiesStore.find((c: any) => c.community_id === req.params.id);
+  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
+  const post = {
+    id: `post_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    community_id: req.params.id,
+    title: title.slice(0, 200),
+    body: body.slice(0, 5000),
+    author,
+    image_url: image_url?.slice(0, 500) ?? null,
+    created_at: Date.now(),
+  };
+  if (!(community as any).posts_feed) (community as any).posts_feed = [];
+  (community as any).posts_feed.unshift(post);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(communitiesStore, null, 2));
+  res.json(post);
+});
+
+app.delete(['/communities/:id/posts/:postId', '/api/communities/:id/posts/:postId'], (req: Request, res: Response) => {
+  const community = communitiesStore.find((c: any) => c.community_id === req.params.id);
+  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
+  const feed: any[] = (community as any).posts_feed ?? [];
+  const idx = feed.findIndex((p: any) => p.id === req.params.postId);
+  if (idx === -1) { res.status(404).json({ error: 'Post not found' }); return; }
+  feed.splice(idx, 1);
+  (community as any).posts_feed = feed;
+  fs.writeFileSync(DATA_FILE, JSON.stringify(communitiesStore, null, 2));
+  res.json({ ok: true });
+});
+
 app.listen(PORT, () => {
   console.log(`Eclipse Attestation & Metadata API running on port ${PORT}`);
   console.log(`Pinata IPFS: ${PINATA_JWT ? '✅ real uploads' : '⚠️  fake CIDs (set PINATA_JWT)'}`);
