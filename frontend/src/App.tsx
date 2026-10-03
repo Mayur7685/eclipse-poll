@@ -1,4 +1,5 @@
 import { Navigate, Routes, Route } from 'react-router-dom'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { useWallet } from './hooks/useWallet'
 import Layout from './components/Layout'
 import LandingPage from './pages/LandingPage'

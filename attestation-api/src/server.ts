@@ -3,6 +3,54 @@ dotenv.config(); // MUST be first — signing.ts reads process.env at module loa
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import { z } from 'zod';
+
+// ── Rate limiting ─────────────────────────────────────────────────────────────
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const writeLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20,
+  message: { error: 'Too many write requests, please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// ── Zod validation schemas ────────────────────────────────────────────────────
+const CommunityConfirmSchema = z.object({
+  community_id: z.string().min(1).max(128),
+  name:         z.string().min(1).max(100),
+  description:  z.string().max(500).optional(),
+  creator:      z.string().optional(),
+  credential_type: z.number().int().min(0).max(3).optional(),
+});
+
+const PollConfirmSchema = z.object({
+  community_id: z.string().min(1).max(128),
+  poll_id:      z.string().min(1).max(128),
+  title:        z.string().min(1).max(200),
+  poll_type:    z.string().optional(),
+  options:      z.array(z.any()).min(2).max(8).optional(),
+});
+
+const SubmissionSchema = z.object({
+  address:    z.string().min(10).max(200),
+  pollId:     z.string().min(1).max(128),
+  ciphertext: z.string().min(1).max(10000),
+});
+
+const VerifyCheckSchema = z.object({
+  communityId:       z.string().min(1).max(128),
+  evmAddress:        z.string().optional(),
+  connectedAccounts: z.array(z.any()).optional(),
+});
 import fs from 'fs';
 import path from 'path';
 import { getUserToken, getUserMeta } from './oauth.js';
@@ -26,6 +74,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use(generalLimiter);
 
 const PORT = process.env.PORT || 4000;
 
@@ -90,7 +139,9 @@ app.get(['/communities/:id', '/api/communities/:id'], (req: Request, res: Respon
   res.json(comm);
 });
 
-app.post(['/communities/confirm', '/api/communities/confirm'], (req: Request, res: Response) => {
+app.post(['/communities/confirm', '/api/communities/confirm'], writeLimiter, (req: Request, res: Response) => {
+  const parsed = CommunityConfirmSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Invalid request', details: parsed.error.errors }); return; }
   const existing = communitiesStore.find((c) => c.community_id === req.body.community_id);
   if (!existing) {
     const comm = {
@@ -108,7 +159,9 @@ app.post(['/communities/confirm', '/api/communities/confirm'], (req: Request, re
   }
 });
 
-app.post(['/polls/confirm', '/api/polls/confirm'], (req: Request, res: Response) => {
+app.post(['/polls/confirm', '/api/polls/confirm'], writeLimiter, (req: Request, res: Response) => {
+  const parsed = PollConfirmSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Invalid request', details: parsed.error.errors }); return; }
   const poll = {
     created_at_block: Math.floor(Date.now() / 1000),
     ...req.body,
