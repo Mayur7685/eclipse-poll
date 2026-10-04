@@ -108,3 +108,21 @@ button { cursor: pointer; font: inherit; border: none; background: none; }
 .onboarding-dot  { width: 8px; height: 8px; border-radius: 50%; background: #e5e7eb; }
 .onboarding-dot.active { background: #0070F3; }
 .onboarding-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* Dark mode base */
+.dark body {
+  background-color: #0f0f11;
+  color: #e5e7eb;
+}
+.dark .bg-white { background-color: #1a1a1f !important; }
+.dark .bg-gray-50 { background-color: #111114 !important; }
+.dark .border-gray-100 { border-color: #2a2a30 !important; }
+.dark .border-gray-200 { border-color: #2a2a30 !important; }
+.dark .text-gray-900 { color: #f3f4f6 !important; }
+.dark .text-gray-800 { color: #e5e7eb !important; }
+.dark .text-gray-700 { color: #d1d5db !important; }
+.dark .text-gray-600 { color: #9ca3af !important; }
+.dark .text-gray-500 { color: #6b7280 !important; }
+.dark .text-gray-400 { color: #4b5563 !important; }
+.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+.dark .shadow-xl { box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important; }
