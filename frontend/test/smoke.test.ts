@@ -35,7 +35,7 @@ describe('dist/index.html', () => {
   });
 });
 
-// ── Test 3: public/zk/eclipse-poll/keys/ has exactly 5 prover files ────────
+// ── Test 3: public/zk/eclipse-poll/keys/ has exactly 6 prover files ────────
 
 describe('ZK prover keys in public assets', () => {
   const keysDir = resolve(root, 'public/zk/eclipse-poll/keys');
@@ -44,19 +44,20 @@ describe('ZK prover keys in public assets', () => {
     assert.ok(existsSync(keysDir), `Keys directory not found: ${keysDir}`);
   });
 
-  it('has exactly 5 prover files', () => {
+  it('has exactly 6 prover files', () => {
     const allFiles = readdirSync(keysDir);
     const proverFiles = allFiles.filter((f) => f.endsWith('.prover'));
 
     assert.strictEqual(
       proverFiles.length,
-      5,
-      `Expected 5 .prover files, found ${proverFiles.length}: [${proverFiles.join(', ')}]`,
+      6,
+      `Expected 6 .prover files, found ${proverFiles.length}: [${proverFiles.join(', ')}]`,
     );
   });
 
-  it('all 5 expected prover files are present', () => {
+  it('all 6 expected prover files are present', () => {
     const expected = [
+      'castApprovalVote.prover',
       'castBinaryVote.prover',
       'castRankedVote.prover',
       'closePoll.prover',
