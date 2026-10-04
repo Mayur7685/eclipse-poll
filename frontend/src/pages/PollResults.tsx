@@ -128,6 +128,27 @@ export default function PollResults() {
           }
         }
 
+        // For hierarchical polls — read from hierarchicalTallies and sum across layers
+        if (count === 0n && ledger?.hierarchicalTallies) {
+          try {
+            if (ledger.hierarchicalTallies.member(pollIdBytes)) {
+              const layerMap = ledger.hierarchicalTallies.lookup(pollIdBytes);
+              for (let layer = 0; layer < 4; layer++) {
+                if (layerMap.member(BigInt(layer))) {
+                  const optMap2 = layerMap.lookup(BigInt(layer));
+                  if (optMap2 && optMap2.member(BigInt(idx))) {
+                    const counter2 = optMap2.lookup(BigInt(idx));
+                    const val2 = typeof counter2?.read === 'function' ? counter2.read() : counter2;
+                    count += typeof val2 === 'bigint' ? val2 : BigInt(String(val2 ?? 0));
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('[PollResults] hierarchical tally lookup error:', e);
+          }
+        }
+
         return { optionId: idx, label, count };
       });
 

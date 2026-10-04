@@ -173,6 +173,29 @@
       }
     },
     {
+      "name": "castHierarchicalVote",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "closePoll",
       "pure": false,
       "proof": true,
@@ -241,6 +264,36 @@
         "length": 8,
         "type": {
           "type-name": "Boolean"
+        }
+      }
+    },
+    {
+      "name": "getLayerWeights",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Vector",
+        "length": 4,
+        "type": {
+          "type-name": "Vector",
+          "length": 8,
+          "type": {
+            "type-name": "Uint",
+            "maxval": 255
+          }
+        }
+      }
+    },
+    {
+      "name": "getLayerParents",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Vector",
+        "length": 4,
+        "type": {
+          "type-name": "Uint",
+          "maxval": 255
         }
       }
     }
@@ -425,6 +478,37 @@
         },
         "value": {
           "type-name": "Counter"
+        }
+      }
+    },
+    {
+      "name": "hierarchicalTallies",
+      "index": 6,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Alias",
+        "name": "PollId",
+        "type": {
+          "type-name": "Bytes",
+          "length": 32
+        }
+      },
+      "value": {
+        "type-name": "Map",
+        "key": {
+          "type-name": "Uint",
+          "maxval": 255
+        },
+        "value": {
+          "type-name": "Map",
+          "key": {
+            "type-name": "Uint",
+            "maxval": 255
+          },
+          "value": {
+            "type-name": "Counter"
+          }
         }
       }
     }

@@ -39,14 +39,22 @@ export ledger pollCount: Counter;
 export ledger nullifiers: Set<Nullifier>;
 
 // Real-Time Tally Counters
-// tallies[pollId][optionIndex] = vote count
+// tallies[pollId][optionIndex] = vote count (simple, ranked, approval polls)
 export ledger tallies: Map<PollId, Map<Uint<8>, Counter>>;
+
+// Hierarchical tally: hierarchicalTallies[pollId][parentId][optionIndex] = vote count
+// parentId=0 means root layer options
+export ledger hierarchicalTallies: Map<PollId, Map<Uint<8>, Map<Uint<8>, Counter>>>;
 
 // --- Witnesses (Private Inputs) ---
 witness getUserSecret(): UserSecretKey;
 witness getVoteChoice(): Uint<8>;
 witness getRankedWeights(): Vector<8, Uint<8>>;
 witness getApprovalChoices(): Vector<8, Boolean>;
+// Hierarchical: weights per layer (up to 4 layers × 8 options each)
+// Index 0 = root layer, 1 = sublayer of chosen root, etc.
+witness getLayerWeights(): Vector<4, Vector<8, Uint<8>>>;
+witness getLayerParents(): Vector<4, Uint<8>>;  // parentId for each layer (0 = root)
 
 // --- Pure Helper Circuits ---
 pure circuit deriveUserPublicKey(sk: UserSecretKey, secretPin: Uint<16>): UserPublicKey {
@@ -124,6 +132,16 @@ export circuit createPoll(
     tallies.lookup(disclose(pollId)).insertDefault(i as Uint<8>);
   }
 
+  // Pre-initialize hierarchical tally counters for 4 layers × 8 options.
+  // parentId 0..3 represent root and 3 sub-layers.
+  hierarchicalTallies.insertDefault(disclose(pollId));
+  for (const layer of 0..4) {
+    hierarchicalTallies.lookup(disclose(pollId)).insertDefault(layer as Uint<8>);
+    for (const opt of 0..8) {
+      hierarchicalTallies.lookup(disclose(pollId)).lookup(layer as Uint<8>).insertDefault(opt as Uint<8>);
+    }
+  }
+
   pollCount.increment(1);
 }
 
@@ -189,6 +207,35 @@ export circuit castApprovalVote(pollId: PollId): [] {
   for (const i of 0..8) {
     if ((i as Uint<8>) < config.optionCount && disclose(choices[i])) {
       tallies.lookup(pid).lookup(disclose(i as Uint<8>)).increment(1);
+    }
+  }
+}
+
+export circuit castHierarchicalVote(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  assert(!config.isClosed, "Poll closed");
+  assert(config.pollType == PollType.HIERARCHICAL, "Not a hierarchical poll");
+
+  const sk = getUserSecret();
+  const nul = computeNullifier(sk, pollId);
+  assert(!nullifiers.member(disclose(nul)), "Already voted");
+  nullifiers.insert(disclose(nul));
+
+  // Layer weights: getLayerWeights()[layer][optionIdx] = Borda weight
+  // getLayerParents()[layer] = parentId for that layer (0 = root layer)
+  const layerWeights = getLayerWeights();
+  const layerParents = getLayerParents();
+
+  // Record weights per layer into hierarchicalTallies[pollId][parentId][optionIdx]
+  for (const layer of 0..4) {
+    const parentId = disclose(layerParents[layer]);
+    for (const opt of 0..8) {
+      const w = disclose(layerWeights[layer][opt]) as Uint<16>;
+      if (w > (0 as Uint<16>)) {
+        hierarchicalTallies.lookup(pid).lookup(parentId).lookup(opt as Uint<8>).increment(w);
+      }
     }
   }
 }

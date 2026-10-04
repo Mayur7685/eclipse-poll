@@ -3,6 +3,8 @@ export type EclipsePollPrivateState = {
     voteChoice: bigint;
     rankedWeights: bigint[];
     approvalChoices: boolean[];
+    layerWeights: bigint[][];
+    layerParents: bigint[];
 };
 export declare const witnesses: {
     getUserSecret: (ctx: {
@@ -17,4 +19,10 @@ export declare const witnesses: {
     getApprovalChoices: (ctx: {
         privateState: EclipsePollPrivateState;
     }) => (boolean[] | EclipsePollPrivateState)[];
+    getLayerWeights: (ctx: {
+        privateState: EclipsePollPrivateState;
+    }) => (bigint[][] | EclipsePollPrivateState)[];
+    getLayerParents: (ctx: {
+        privateState: EclipsePollPrivateState;
+    }) => (bigint[] | EclipsePollPrivateState)[];
 };

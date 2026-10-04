@@ -78,6 +78,20 @@ export function createInitialPrivateState(userSecretKey?: Uint8Array): EclipsePo
     voteChoice: 0n,
     rankedWeights: [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
     approvalChoices: [false, false, false, false, false, false, false, false],
+    layerWeights: [
+      [0n,0n,0n,0n,0n,0n,0n,0n],
+      [0n,0n,0n,0n,0n,0n,0n,0n],
+      [0n,0n,0n,0n,0n,0n,0n,0n],
+      [0n,0n,0n,0n,0n,0n,0n,0n],
+    ],
+    layerParents: [0n, 0n, 0n, 0n],
+    layerWeights: [
+      [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+      [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+      [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+      [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+    ],
+    layerParents: [0n, 0n, 0n, 0n],
   };
 }
 

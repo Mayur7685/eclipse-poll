@@ -264,11 +264,87 @@ export function useVoting() {
     [session, address],
   );
 
+  // ── Hierarchical ranked vote (MDCT) ───────────────────────────────────────
+  // layerRankings: Map<parentId, VoteRanking> — rankings per layer
+  // Options structure: { option_id, parent_option_id } determines tree shape
+  const castHierarchical = useCallback(
+    async (
+      _contractAddress: string,
+      pollIdBytes: Uint8Array,
+      layerRankings: Map<number, Record<string, number>>,
+      options: { option_id: number; parent_option_id: number }[],
+    ) => {
+      if (!session || !address) { setError('Wallet not connected'); return; }
+      setStatus('proving');
+      setError(null);
+      setTxHash(null);
+      try {
+        const masterAddress = await getOrDeployMasterContract(session);
+        const psp = session.providers.privateStateProvider;
+        psp.setContractAddress(masterAddress);
+        const existing = (await psp.get(PRIVATE_STATE_ID) as any) ?? {
+          userSecretKey: getOrCreateUserSecretKey(),
+          voteChoice: 0n, rankedWeights: [0n,0n,0n,0n,0n,0n,0n,0n],
+        };
+
+        // Build layer arrays from the layer rankings map
+        // Each entry: layerWeights[layerIdx][optIdx] = Borda weight
+        // layerParents[layerIdx] = parentId for that layer
+        const layerWeightsArr: bigint[][] = Array(4).fill(null).map(() => Array(8).fill(0n));
+        const layerParentsArr: bigint[] = [0n, 0n, 0n, 0n];
+
+        let layerIdx = 0;
+        for (const [parentId, ranking] of layerRankings.entries()) {
+          if (layerIdx >= 4) break;
+          layerParentsArr[layerIdx] = BigInt(parentId);
+          // Get options that belong to this parent
+          const siblings = options.filter(o => o.parent_option_id === parentId);
+          const optionCount = siblings.length;
+          for (const [optIdStr, rank] of Object.entries(ranking)) {
+            const optId = Number(optIdStr);
+            // Find 0-based index within siblings
+            const sibIdx = siblings.findIndex(s => s.option_id === optId);
+            if (sibIdx >= 0 && sibIdx < 8 && rank > 0) {
+              const points = Math.max(0, optionCount - rank + 1);
+              layerWeightsArr[layerIdx][sibIdx] = BigInt(Math.min(255, points));
+            }
+          }
+          layerIdx++;
+        }
+
+        await psp.set(PRIVATE_STATE_ID, {
+          ...existing,
+          layerWeights: layerWeightsArr,
+          layerParents: layerParentsArr,
+        });
+
+        const result = await callCircuitOnMasterContract(session, 'castHierarchicalVote', [pollIdBytes]);
+        const resolvedHash = result.txHash ?? null;
+        const pollIdHex = Buffer.from(pollIdBytes).toString('hex');
+        markVoted(pollIdHex, address);
+        void saveEncryptedVote(address, pollIdHex, {
+          layerRankings: Object.fromEntries(layerRankings),
+          poll_type: 'hierarchical',
+          votedAt: Date.now(),
+        });
+        setTxHash(resolvedHash);
+        setStatus('done');
+        return resolvedHash;
+      } catch (e: any) {
+        console.error('Hierarchical vote failed:', e);
+        setError(e.message || String(e));
+        setStatus('error');
+      }
+    },
+    [session, address],
+  );
+
   return {
     castVote,
     castSimple,
     castSurvey,
     castApproval,
+    castHierarchical,
     status,
     txHash,
     error,

@@ -81,7 +81,7 @@ function Stepper({ step }: { step: number }) {
 export default function PollDetail() {
   const { communityId, pollId } = useParams<{ communityId: string; pollId: string }>()
   const { address, isConnected } = useWallet()
-  const { castVote, castSimple, castApproval, status, txHash: txId, error } = useVoting()
+  const { castVote, castSimple, castApproval, castHierarchical, status, txHash: txId, error } = useVoting()
   const toast = useToast()
 
   const [poll, setPoll]             = useState<Poll | null>(null)
@@ -262,14 +262,8 @@ export default function PollDetail() {
       // Simple single-choice vote — uses castBinaryVote circuit
       await castSimple('', pollIdBytes, selectedOption)
     } else if (type === 'hierarchical') {
-      // Hierarchical ranked vote — merge all layer rankings
-      const merged: VoteRanking = {}
-      if (layerRankings instanceof Map) {
-        for (const r of layerRankings.values()) Object.assign(merged, r)
-      } else {
-        Object.assign(merged, layerRankings)
-      }
-      await castVote('', pollIdBytes, merged, poll!.options.length)
+      // True hierarchical vote — uses castHierarchicalVote circuit
+      await castHierarchical('', pollIdBytes, layerRankings, poll!.options)
     } else if (type === 'flat') {
       await castVote('', pollIdBytes, ranking, poll!.options.length)
     } else if (type === 'approval') {

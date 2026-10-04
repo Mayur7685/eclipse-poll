@@ -36,6 +36,8 @@ export type Witnesses<PS> = {
   getVoteChoice(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   getRankedWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
   getApprovalChoices(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, boolean[]];
+  getLayerWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[][]];
+  getLayerParents(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
 }
 
 export type ImpureCircuits<PS> = {
@@ -53,6 +55,8 @@ export type ImpureCircuits<PS> = {
   castRankedVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castApprovalVote(context: __compactRuntime.CircuitContext<PS>,
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
+                       pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -71,6 +75,8 @@ export type ProvableCircuits<PS> = {
   castRankedVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castApprovalVote(context: __compactRuntime.CircuitContext<PS>,
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
+                       pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -92,6 +98,8 @@ export type Circuits<PS> = {
   castRankedVote(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castApprovalVote(context: __compactRuntime.CircuitContext<PS>,
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
+                       pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -127,6 +135,22 @@ export type Ledger = {
       size(): bigint;
       member(key_1: bigint): boolean;
       lookup(key_1: bigint): { read(): bigint }
+    }
+  };
+  hierarchicalTallies: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: PollId): boolean;
+    lookup(key_0: PollId): {
+      isEmpty(): boolean;
+      size(): bigint;
+      member(key_1: bigint): boolean;
+      lookup(key_1: bigint): {
+        isEmpty(): boolean;
+        size(): bigint;
+        member(key_2: bigint): boolean;
+        lookup(key_2: bigint): { read(): bigint }
+      }
     }
   };
 }

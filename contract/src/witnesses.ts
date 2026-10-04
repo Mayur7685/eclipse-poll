@@ -2,7 +2,10 @@ export type EclipsePollPrivateState = {
   userSecretKey:    Uint8Array;
   voteChoice:       bigint;
   rankedWeights:    bigint[];
-  approvalChoices:  boolean[];   // Vector<8, Boolean> for approval voting
+  approvalChoices:  boolean[];
+  // Hierarchical voting: up to 4 layers × 8 options
+  layerWeights:     bigint[][];  // [layer][optionIdx] = Borda weight
+  layerParents:     bigint[];    // [layer] = parentId (0 = root)
 };
 
 export const witnesses = {
@@ -17,4 +20,10 @@ export const witnesses = {
 
   getApprovalChoices: (ctx: { privateState: EclipsePollPrivateState }) =>
     [ctx.privateState, ctx.privateState.approvalChoices],
+
+  getLayerWeights: (ctx: { privateState: EclipsePollPrivateState }) =>
+    [ctx.privateState, ctx.privateState.layerWeights],
+
+  getLayerParents: (ctx: { privateState: EclipsePollPrivateState }) =>
+    [ctx.privateState, ctx.privateState.layerParents],
 };
