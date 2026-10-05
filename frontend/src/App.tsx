@@ -1,28 +1,27 @@
-import { lazy, Suspense } from 'react'
 import { Navigate, Routes, Route } from 'react-router-dom'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { useWallet } from './hooks/useWallet'
 import Layout from './components/Layout'
-const LandingPage = lazy(() => import('./pages/LandingPage'))
-const PollFeed = lazy(() => import('./pages/PollFeed'))
-const CommunityFeed = lazy(() => import('./pages/CommunityFeed'))
-const CommunityDetail = lazy(() => import('./pages/CommunityDetail'))
-const CommunityPosts = lazy(() => import('./pages/CommunityPosts'))
-const PostDetail = lazy(() => import('./pages/PostDetail'))
-const PollDetail = lazy(() => import('./pages/PollDetail'))
-const PollResults = lazy(() => import('./pages/PollResults'))
-const CreateCommunity = lazy(() => import('./pages/CreateCommunity'))
-const CreatePoll = lazy(() => import('./pages/CreatePoll'))
-const CreateSurvey = lazy(() => import('./pages/CreateSurvey'))
-const Surveys = lazy(() => import('./pages/Surveys'))
-const Activity = lazy(() => import('./pages/Activity'))
-const SurveyDetail = lazy(() => import('./pages/SurveyDetail'))
-const MyCredentials = lazy(() => import('./pages/MyCredentials'))
-const CredentialsHub = lazy(() => import('./pages/CredentialsHub'))
-const MyVotes = lazy(() => import('./pages/MyVotes'))
-const AdminSetup = lazy(() => import('./pages/AdminSetup'))
-const OAuthCallback = lazy(() => import('./pages/OAuthCallback'))
+import LandingPage from './pages/LandingPage'
+import PollFeed from './pages/PollFeed'
+import CommunityFeed from './pages/CommunityFeed'
+import CommunityDetail from './pages/CommunityDetail'
+import CommunityPosts from './pages/CommunityPosts'
+import PostDetail from './pages/PostDetail'
+import PollDetail from './pages/PollDetail'
+import PollResults from './pages/PollResults'
+import CreateCommunity from './pages/CreateCommunity'
+import CreatePoll from './pages/CreatePoll'
+import CreateSurvey from './pages/CreateSurvey'
+import Surveys from './pages/Surveys'
+import Activity from './pages/Activity'
+import SurveyDetail from './pages/SurveyDetail'
+import MyCredentials from './pages/MyCredentials'
+import CredentialsHub from './pages/CredentialsHub'
+import MyVotes from './pages/MyVotes'
+import AdminSetup from './pages/AdminSetup'
+import OAuthCallback from './pages/OAuthCallback'
 
 function HomeGate() {
   const { isConnected } = useWallet()

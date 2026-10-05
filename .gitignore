@@ -102,3 +102,6 @@ coverage/
 *.tmp
 *.temp
 .tmp/
+# Local reference files (not for public repo)
+supabase-setup.md
+wave-update-short.md
