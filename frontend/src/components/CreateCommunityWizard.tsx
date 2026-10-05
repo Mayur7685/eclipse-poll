@@ -103,13 +103,23 @@ function DetailsStep({ value, onChange }: { value: DetailsForm; onChange: (v: De
         <input className={inputCls} placeholder="https://…" value={value.logo}
           onChange={e => set('logo', e.target.value)} />
       </div>
-      {/* Credential gating is coming soon — all communities are FREE for now */}
-      <div className="px-4 py-3 rounded-xl bg-amber-50 border border-amber-100 text-xs text-amber-700 flex items-center gap-2">
-        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <span>Community gating is <strong>coming soon</strong>. All communities are open to everyone for now.</span>
-      </div>
+          <label className={labelCls}>Credential Type</label>
+          <div className="space-y-2">
+            {TIERS.map(tier => (
+              <button key={tier.value} type="button"
+                onClick={() => set('credential_type', tier.value)}
+                className={`w-full flex items-start gap-3 px-3.5 py-3 rounded-xl border text-left transition-colors ${
+                  value.credential_type === tier.value
+                    ? 'border-[#0070F3] bg-blue-50'
+                    : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+                }`}>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border shrink-0 mt-0.5 ${tier.badge}`}>
+                  {tier.label}
+                </span>
+                <span className="text-xs text-gray-500 leading-relaxed">{tier.desc}</span>
+              </button>
+            ))}
+          </div>
 
       <div>
         <label className={labelCls}>Poll Creation Policy</label>
@@ -411,7 +421,7 @@ function ReviewStep({ details, groups }: { details: DetailsForm; groups: Require
   )
 }
 
-const STEPS = ['Details', 'Review'] // Requirements frozen — all communities are FREE
+const STEPS = ['Details', 'Requirements', 'Review']
 
 function WizardStepper({ step }: { step: number }) {
   return (
@@ -449,7 +459,7 @@ export default function CreateCommunityWizard() {
   const [error, setError]     = useState<string | null>(null)
 
   const [details, setDetails] = useState<DetailsForm>({
-    name: '', description: '', logo: '', credential_type: 0, credential_expiry_days: 30, creator_only: false,
+    name: '', description: '', logo: '', credential_type: 0, credential_expiry_days: 30, creator_only: true,
   })
   const [groups, setGroups] = useState<RequirementGroup[]>([newGroup()])
 
@@ -557,7 +567,8 @@ export default function CreateCommunityWizard() {
             }
             setDetails(d)
           }} />}
-          {step === 1 && <ReviewStep details={details} groups={groups} />}
+          {step === 1 && <RequirementsStep groups={groups} onChange={setGroups} credentialType={details.credential_type} />}
+          {step === 2 && <ReviewStep details={details} groups={groups} />}
 
           {error && (
             <div className="mt-4">

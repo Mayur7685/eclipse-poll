@@ -363,8 +363,6 @@ export default function CreatePollWizard() {
               )}
             </div>
 
-            {/* Credential gate selector hidden — all polls open (coming soon) */}
-            {false && (
             <div>
               <label className={labelCls}>Credential Gate</label>
               <select
@@ -377,7 +375,6 @@ export default function CreatePollWizard() {
                 <option value={CredentialType.SOCIAL_OAUTH}>Social OAuth Attestation</option>
               </select>
             </div>
-            )}
 
             <button
               disabled={!communityId || !title.trim() || notCreator}
