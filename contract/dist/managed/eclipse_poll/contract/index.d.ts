@@ -31,16 +31,27 @@ export type PollConfig = { creator: UserPublicKey;
                            isClosed: boolean
                          };
 
+export type Schnorr_SchnorrSignature = { announcement: __compactRuntime.JubjubPoint;
+                                         response: bigint
+                                       };
+
 export type Witnesses<PS> = {
+  getSchnorrReduction(context: __compactRuntime.WitnessContext<Ledger, PS>,
+                      challengeHash_0: bigint): [PS, [bigint, bigint]];
   getUserSecret(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, UserSecretKey];
   getVoteChoice(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   getRankedWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
   getApprovalChoices(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, boolean[]];
   getLayerWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[][]];
   getLayerParents(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
+  getAttestation(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, [Schnorr_SchnorrSignature,
+                                                                              CredentialType,
+                                                                              PollId]];
 }
 
 export type ImpureCircuits<PS> = {
+  registerAttestationProvider(context: __compactRuntime.CircuitContext<PS>,
+                              providerPk_0: __compactRuntime.JubjubPoint): __compactRuntime.CircuitResults<PS, []>;
   registerCommunity(context: __compactRuntime.CircuitContext<PS>,
                     communityId_0: Uint8Array,
                     configHash_0: Uint8Array,
@@ -57,10 +68,16 @@ export type ImpureCircuits<PS> = {
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
                        pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedBinaryVote(context: __compactRuntime.CircuitContext<PS>,
+                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
+                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type ProvableCircuits<PS> = {
+  registerAttestationProvider(context: __compactRuntime.CircuitContext<PS>,
+                              providerPk_0: __compactRuntime.JubjubPoint): __compactRuntime.CircuitResults<PS, []>;
   registerCommunity(context: __compactRuntime.CircuitContext<PS>,
                     communityId_0: Uint8Array,
                     configHash_0: Uint8Array,
@@ -77,6 +94,10 @@ export type ProvableCircuits<PS> = {
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
                        pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedBinaryVote(context: __compactRuntime.CircuitContext<PS>,
+                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
+                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -84,6 +105,8 @@ export type PureCircuits = {
 }
 
 export type Circuits<PS> = {
+  registerAttestationProvider(context: __compactRuntime.CircuitContext<PS>,
+                              providerPk_0: __compactRuntime.JubjubPoint): __compactRuntime.CircuitResults<PS, []>;
   registerCommunity(context: __compactRuntime.CircuitContext<PS>,
                     communityId_0: Uint8Array,
                     configHash_0: Uint8Array,
@@ -100,11 +123,16 @@ export type Circuits<PS> = {
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
                        pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedBinaryVote(context: __compactRuntime.CircuitContext<PS>,
+                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
+                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type Ledger = {
   readonly contractAdmin: AdminPublicKey;
+  readonly attestationPk: __compactRuntime.JubjubPoint;
   communities: {
     isEmpty(): boolean;
     size(): bigint;

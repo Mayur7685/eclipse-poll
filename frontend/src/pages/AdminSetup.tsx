@@ -2,9 +2,96 @@
 
 import { useState } from 'react'
 import { useWallet } from '../hooks/useWallet'
-import { deployEclipsePollContract, getStoredMasterContractAddress, setStoredMasterContractAddress } from '../lib/eclipse'
+import { deployEclipsePollContract, callCircuitOnMasterContract, getStoredMasterContractAddress, setStoredMasterContractAddress } from '../lib/eclipse'
 
 const ENV_CONTRACT = import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS as string | undefined
+const VERIFIER = import.meta.env.VITE_VERIFIER_URL ?? 'http://localhost:4000'
+
+// ── RegisterAttestationStep ───────────────────────────────────────────────────
+function RegisterAttestationStep({ contractAddress }: { contractAddress: string }) {
+  const { session, isConnected, connect } = useWallet()
+  const [loading, setLoading]   = useState(false)
+  const [status, setStatus]     = useState<'idle' | 'done' | 'error'>('idle')
+  const [error, setError]       = useState<string | null>(null)
+  const [txHash, setTxHash]     = useState<string | null>(null)
+
+  // Persist done status per contract
+  const DONE_KEY = `eclipse:regDone:${contractAddress}`
+  const [isDone, setIsDone] = useState(() => localStorage.getItem(DONE_KEY) === '1')
+
+  async function handleRegister() {
+    if (!isConnected || !session) { await connect(); return }
+    setLoading(true); setError(null)
+    try {
+      // Fetch provider key from attestation API
+      const res = await fetch(`${VERIFIER}/provider-key`)
+      if (!res.ok) throw new Error(`Attestation API error: ${res.status}. Is it running?`)
+      const { x, y } = await res.json() as { x: string; y: string }
+
+      const result = await callCircuitOnMasterContract(
+        session,
+        'registerAttestationProvider',
+        [{ x: BigInt(x), y: BigInt(y) }],
+        (msg) => console.log('[AdminSetup]', msg),
+      )
+      setTxHash(result.txHash ?? result.contractAddress)
+      setStatus('done')
+      setIsDone(true)
+      localStorage.setItem(DONE_KEY, '1')
+    } catch (e: any) {
+      setError(e.message ?? String(e))
+      setStatus('error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (isDone) {
+    return (
+      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 space-y-1.5">
+        <p className="text-sm font-semibold text-emerald-800">✓ Attestation provider registered</p>
+        <p className="text-xs text-emerald-600">Credential-gated polls are enabled.</p>
+        {txHash && (
+          <a href={`https://explorer.1am.xyz/tx/${txHash}?network=preprod`}
+            target="_blank" rel="noopener noreferrer"
+            className="text-xs text-emerald-700 hover:underline block">
+            View transaction ↗
+          </a>
+        )}
+        <button onClick={() => { setIsDone(false); setStatus('idle'); localStorage.removeItem(DONE_KEY) }}
+          className="text-xs text-gray-400 hover:text-gray-600 mt-1">
+          Re-register
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600 break-words">
+          {error}
+        </div>
+      )}
+      {!isConnected && (
+        <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          ⚠️ Connect your 1AM wallet to register on-chain
+        </p>
+      )}
+      <button
+        onClick={() => void handleRegister()}
+        disabled={loading}
+        className="w-full py-3 bg-[#0070F3] hover:bg-blue-600 text-white font-medium rounded-xl text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+      >
+        {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+        {loading ? 'Registering…' : 'Register Attestation Provider'}
+      </button>
+      <p className="text-xs text-gray-400 text-center">
+        Fetches the provider key from the attestation API and stores it on-chain.
+      </p>
+    </div>
+  )
+}
 
 export default function AdminSetup() {
   const { session, isConnected, address, connect } = useWallet()
@@ -156,6 +243,22 @@ export default function AdminSetup() {
           </div>
         )}
       </div>
+
+      {/* ── Step 2: Register Attestation Provider ───────────────────────── */}
+      {contractAddress && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+          <div>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
+              Step 2 — Register Attestation Provider
+            </span>
+            <p className="text-sm text-gray-500 mt-3 leading-relaxed">
+              Required for credential-gated polls. Registers the attestation server's public key on-chain.
+              Run this once after each contract deployment.
+            </p>
+          </div>
+          <RegisterAttestationStep contractAddress={contractAddress} />
+        </div>
+      )}
 
       {/* ── Status bar ───────────────────────────────────────────────────── */}
       <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-xs text-blue-700 space-y-1">

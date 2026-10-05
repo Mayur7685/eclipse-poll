@@ -5,6 +5,15 @@ export type EclipsePollPrivateState = {
     approvalChoices: boolean[];
     layerWeights: bigint[][];
     layerParents: bigint[];
+    attestationSignature: {
+        announcement: {
+            x: bigint;
+            y: bigint;
+        };
+        response: bigint;
+    } | null;
+    attestationCredType: bigint;
+    attestationPollId: Uint8Array;
 };
 export declare const witnesses: {
     getUserSecret: (ctx: {
@@ -25,4 +34,16 @@ export declare const witnesses: {
     getLayerParents: (ctx: {
         privateState: EclipsePollPrivateState;
     }) => (bigint[] | EclipsePollPrivateState)[];
+    getAttestation: (ctx: {
+        privateState: EclipsePollPrivateState;
+    }) => (EclipsePollPrivateState | (bigint | Uint8Array<ArrayBufferLike> | {
+        announcement: {
+            x: bigint;
+            y: bigint;
+        };
+        response: bigint;
+    })[])[];
+    getSchnorrReduction: (ctx: {
+        privateState: EclipsePollPrivateState;
+    }, challengeHash: bigint) => (bigint[] | EclipsePollPrivateState)[];
 };

@@ -4,6 +4,29 @@
   "runtime-version": "0.16.0",
   "circuits": [
     {
+      "name": "registerAttestationProvider",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "providerPk",
+          "type": {
+            "type-name": "Alias",
+            "name": "JubjubPoint",
+            "type": {
+              "type-name": "Opaque",
+              "tsType": "JubjubPoint"
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "registerCommunity",
       "pure": false,
       "proof": true,
@@ -196,6 +219,52 @@
       }
     },
     {
+      "name": "castCredentialedBinaryVote",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "castCredentialedRankedVote",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "closePoll",
       "pure": false,
       "proof": true,
@@ -220,6 +289,29 @@
     }
   ],
   "witnesses": [
+    {
+      "name": "getSchnorrReduction",
+      "arguments": [
+        {
+          "name": "challengeHash",
+          "type": {
+            "type-name": "Field"
+          }
+        }
+      ],
+      "result type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Field"
+          },
+          {
+            "type-name": "Uint",
+            "maxval": 452312848583266388373324160190187140051835877600158453279131187530910662655
+          }
+        ]
+      }
+    },
     {
       "name": "getUserSecret",
       "arguments": [
@@ -296,6 +388,56 @@
           "maxval": 255
         }
       }
+    },
+    {
+      "name": "getAttestation",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Tuple",
+        "types": [
+          {
+            "type-name": "Struct",
+            "name": "SchnorrSignature",
+            "elements": [
+              {
+                "name": "announcement",
+                "type": {
+                  "type-name": "Alias",
+                  "name": "JubjubPoint",
+                  "type": {
+                    "type-name": "Opaque",
+                    "tsType": "JubjubPoint"
+                  }
+                }
+              },
+              {
+                "name": "response",
+                "type": {
+                  "type-name": "Field"
+                }
+              }
+            ]
+          },
+          {
+            "type-name": "Enum",
+            "name": "CredentialType",
+            "elements": [
+              "FREE",
+              "ALLOWLIST",
+              "SOCIAL_OAUTH"
+            ]
+          },
+          {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        ]
+      }
     }
   ],
   "contracts": [
@@ -316,8 +458,22 @@
       }
     },
     {
-      "name": "communities",
+      "name": "attestationPk",
       "index": 1,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Alias",
+        "name": "JubjubPoint",
+        "type": {
+          "type-name": "Opaque",
+          "tsType": "JubjubPoint"
+        }
+      }
+    },
+    {
+      "name": "communities",
+      "index": 2,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -363,7 +519,7 @@
     },
     {
       "name": "polls",
-      "index": 2,
+      "index": 3,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -439,13 +595,13 @@
     },
     {
       "name": "pollCount",
-      "index": 3,
+      "index": 4,
       "exported": true,
       "storage": "Counter"
     },
     {
       "name": "nullifiers",
-      "index": 4,
+      "index": 5,
       "exported": true,
       "storage": "Set",
       "type": {
@@ -459,7 +615,7 @@
     },
     {
       "name": "tallies",
-      "index": 5,
+      "index": 6,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -483,7 +639,7 @@
     },
     {
       "name": "hierarchicalTallies",
-      "index": 6,
+      "index": 7,
       "exported": true,
       "storage": "Map",
       "key": {

@@ -1,6 +1,17 @@
 pragma language_version >= 0.22 && <= 0.23;
 
 import CompactStandardLibrary;
+import "schnorr" prefix Schnorr_;
+
+export { Schnorr_SchnorrSignature };
+
+struct SchnorrHashInput3 {
+  ann_x: Field;
+  ann_y: Field;
+  pk_x: Field;
+  pk_y: Field;
+  msg: Vector<3, Field>;
+}
 
 // --- Enums ---
 export enum PollType { SIMPLE, RANKED_CHOICE, HIERARCHICAL, APPROVAL }
@@ -32,6 +43,9 @@ export struct PollConfig {
 
 // --- Ledger State (Public) ---
 export ledger contractAdmin: AdminPublicKey;
+// Attestation provider public key — set once via registerAttestationProvider
+// Used by credentialed vote circuits to verify Schnorr signatures
+export ledger attestationPk: JubjubPoint;
 
 export ledger communities: Map<Bytes<32>, CommunityOnChainConfig>;
 export ledger polls: Map<PollId, PollConfig>;
@@ -52,9 +66,10 @@ witness getVoteChoice(): Uint<8>;
 witness getRankedWeights(): Vector<8, Uint<8>>;
 witness getApprovalChoices(): Vector<8, Boolean>;
 // Hierarchical: weights per layer (up to 4 layers × 8 options each)
-// Index 0 = root layer, 1 = sublayer of chosen root, etc.
 witness getLayerWeights(): Vector<4, Vector<8, Uint<8>>>;
-witness getLayerParents(): Vector<4, Uint<8>>;  // parentId for each layer (0 = root)
+witness getLayerParents(): Vector<4, Uint<8>>;
+// Attestation: Schnorr signature + credential metadata
+witness getAttestation(): [Schnorr_SchnorrSignature, CredentialType, PollId];
 
 // --- Pure Helper Circuits ---
 pure circuit deriveUserPublicKey(sk: UserSecretKey, secretPin: Uint<16>): UserPublicKey {
@@ -83,6 +98,12 @@ pure circuit computeNullifier(sk: UserSecretKey, pollId: PollId): Nullifier {
 // --- Constructor ---
 constructor() {
   contractAdmin = disclose(deriveAdminPublicKey(getUserSecret()));
+}
+
+// --- Admin: Register Attestation Provider ---
+export circuit registerAttestationProvider(providerPk: JubjubPoint): [] {
+  assert(contractAdmin == deriveAdminPublicKey(getUserSecret()), "Only admin");
+  attestationPk = disclose(providerPk);
 }
 
 // --- Community Registration ---
@@ -236,6 +257,70 @@ export circuit castHierarchicalVote(pollId: PollId): [] {
       if (w > (0 as Uint<16>)) {
         hierarchicalTallies.lookup(pid).lookup(parentId).lookup(opt as Uint<8>).increment(w);
       }
+    }
+  }
+}
+
+// --- Credentialed Vote Circuits (Schnorr on-chain) ---
+// These separate circuits are used for ALLOWLIST and SOCIAL_OAUTH gated polls.
+// Separation avoids the Compact compiler limitation of unconditional circuit inlining.
+
+export circuit castCredentialedBinaryVote(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  assert(!config.isClosed, "Poll closed");
+  assert(config.pollType == PollType.SIMPLE, "Not a simple poll");
+  assert(config.credType != CredentialType.FREE, "Use castBinaryVote for free polls");
+
+  const sk = getUserSecret();
+  const nul = computeNullifier(sk, pollId);
+  assert(!nullifiers.member(disclose(nul)), "Already voted");
+  nullifiers.insert(disclose(nul));
+
+  // Verify Schnorr attestation signature
+  const [sig, credType, attPollId] = getAttestation();
+  const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
+  const msg: Vector<3, Field> = [
+    disclose(credType) as Field,
+    transientHash<PollId>(pollId),
+    userPkHash
+  ];
+  Schnorr_schnorrVerify<3>(msg, sig, attestationPk);
+
+  const choice = getVoteChoice();
+  assert(choice < config.optionCount, "Invalid option");
+  tallies.lookup(pid).lookup(disclose(choice)).increment(1);
+}
+
+export circuit castCredentialedRankedVote(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  assert(!config.isClosed, "Poll closed");
+  assert(config.pollType == PollType.RANKED_CHOICE, "Not a ranked poll");
+  assert(config.credType != CredentialType.FREE, "Use castRankedVote for free polls");
+
+  const sk = getUserSecret();
+  const nul = computeNullifier(sk, pollId);
+  assert(!nullifiers.member(disclose(nul)), "Already voted");
+  nullifiers.insert(disclose(nul));
+
+  const [sig, credType, attPollId] = getAttestation();
+  const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
+  const msg: Vector<3, Field> = [
+    disclose(credType) as Field,
+    transientHash<PollId>(pollId),
+    userPkHash
+  ];
+  Schnorr_schnorrVerify<3>(msg, sig, attestationPk);
+
+  const weights = getRankedWeights();
+  for (const i of 0..8) {
+    if ((i as Uint<8>) < config.optionCount) {
+      tallies.lookup(pid).lookup(disclose(i as Uint<8>)).increment(
+        disclose(weights[i]) as Uint<16>
+      );
     }
   }
 }

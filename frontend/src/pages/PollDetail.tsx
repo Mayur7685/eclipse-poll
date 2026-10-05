@@ -81,7 +81,7 @@ function Stepper({ step }: { step: number }) {
 export default function PollDetail() {
   const { communityId, pollId } = useParams<{ communityId: string; pollId: string }>()
   const { address, isConnected } = useWallet()
-  const { castVote, castSimple, castApproval, castHierarchical, status, txHash: txId, error } = useVoting()
+  const { castVote, castSimple, castApproval, castHierarchical, castCredentialedSimple, castCredentialedRanked, status, txHash: txId, error } = useVoting()
   const toast = useToast()
 
   const [poll, setPoll]             = useState<Poll | null>(null)
@@ -258,14 +258,24 @@ export default function PollDetail() {
     const pollIdBytes = fromHex(pollId.replace(/^0x/, '').padStart(64, '0'))
     const type = poll!.poll_type
 
+    const isCredentialed = (poll?.required_credential_type ?? 0) > 0 || (poll?.cred_type ?? 0) > 0
+    const commId = communityId ?? ''
+
     if (type === 'simple' && selectedOption !== null) {
-      // Simple single-choice vote — uses castBinaryVote circuit
-      await castSimple('', pollIdBytes, selectedOption)
+      if (isCredentialed) {
+        await castCredentialedSimple('', pollIdBytes, selectedOption, commId)
+      } else {
+        await castSimple('', pollIdBytes, selectedOption)
+      }
     } else if (type === 'hierarchical') {
       // True hierarchical vote — uses castHierarchicalVote circuit
       await castHierarchical('', pollIdBytes, layerRankings, poll!.options)
     } else if (type === 'flat') {
-      await castVote('', pollIdBytes, ranking, poll!.options.length)
+      if (isCredentialed) {
+        await castCredentialedRanked('', pollIdBytes, ranking, poll!.options.length, commId)
+      } else {
+        await castVote('', pollIdBytes, ranking, poll!.options.length)
+      }
     } else if (type === 'approval') {
       await castApproval('', pollIdBytes, Array.from(approvedOptions))
     }

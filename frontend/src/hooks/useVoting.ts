@@ -339,12 +339,156 @@ export function useVoting() {
     [session, address],
   );
 
+
+  // ── Credentialed votes (Schnorr on-chain attestation) ─────────────────────
+  // These call the attestation API first to get a Schnorr sig, then supply
+  // it as a private witness to the credentialed circuit.
+
+  async function getAttestationFromAPI(
+    communityId: string,
+    pollIdBytes: Uint8Array,
+    address: string,
+    connectedAccounts: any[] = [],
+  ): Promise<{ sig: any; credType: bigint } | null> {
+    const VERIFIER = import.meta.env.VITE_VERIFIER_URL ?? 'http://localhost:4000';
+    const pollIdHex = '0x' + Buffer.from(pollIdBytes).toString('hex');
+    try {
+      const res = await fetch(`${VERIFIER}/verify/credential-params`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ communityId, evmAddress: address, connectedAccounts, pollIdHash: pollIdHex, userPubKeyHash: address }),
+      });
+      const data = await res.json();
+      if (!data.passed || !data.attestation) return null;
+      const { attestation } = data;
+      return {
+        sig: {
+          announcement: {
+            x: BigInt(attestation.announcement.x),
+            y: BigInt(attestation.announcement.y),
+          },
+          response: BigInt(attestation.response),
+        },
+        credType: BigInt(attestation.credType ?? 1),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  const castCredentialedSimple = useCallback(
+    async (
+      _contractAddress: string,
+      pollIdBytes: Uint8Array,
+      selectedIndex: number,
+      communityId: string,
+      connectedAccounts: any[] = [],
+    ) => {
+      if (!session || !address) { setError('Wallet not connected'); return; }
+      setStatus('attesting');
+      setError(null);
+      setTxHash(null);
+
+      try {
+        // 1. Get Schnorr attestation from API
+        const attestResult = await getAttestationFromAPI(communityId, pollIdBytes, address, connectedAccounts);
+        if (!attestResult) { setError('Credential verification failed. Check your eligibility.'); setStatus('error'); return; }
+
+        // 2. Set private state with attestation + vote choice
+        const masterAddress = await getOrDeployMasterContract(session);
+        const psp = session.providers.privateStateProvider;
+        psp.setContractAddress(masterAddress);
+        const existing = (await psp.get(PRIVATE_STATE_ID) as any) ?? { userSecretKey: getOrCreateUserSecretKey(), voteChoice: 0n, rankedWeights: [0n,0n,0n,0n,0n,0n,0n,0n] };
+        await psp.set(PRIVATE_STATE_ID, {
+          ...existing,
+          voteChoice: BigInt(selectedIndex),
+          attestationSignature: attestResult.sig,
+          attestationCredType: attestResult.credType,
+          attestationPollId: pollIdBytes,
+        });
+
+        setStatus('proving');
+        const result = await callCircuitOnMasterContract(session, 'castCredentialedBinaryVote', [pollIdBytes]);
+        const resolvedHash = result.txHash ?? null;
+        const pollIdHex = Buffer.from(pollIdBytes).toString('hex');
+        markVoted(pollIdHex, address);
+        void saveEncryptedVote(address, pollIdHex, { selectedOption: selectedIndex, poll_type: 'simple', votedAt: Date.now() });
+        setTxHash(resolvedHash);
+        setStatus('done');
+        return resolvedHash;
+      } catch (e: any) {
+        console.error('Credentialed vote failed:', e);
+        setError(e.message || String(e));
+        setStatus('error');
+      }
+    },
+    [session, address],
+  );
+
+  const castCredentialedRanked = useCallback(
+    async (
+      _contractAddress: string,
+      pollIdBytes: Uint8Array,
+      ranking: VoteRanking,
+      optionCount: number,
+      communityId: string,
+      connectedAccounts: any[] = [],
+    ) => {
+      if (!session || !address) { setError('Wallet not connected'); return; }
+      setStatus('attesting');
+      setError(null);
+      setTxHash(null);
+
+      try {
+        const attestResult = await getAttestationFromAPI(communityId, pollIdBytes, address, connectedAccounts);
+        if (!attestResult) { setError('Credential verification failed.'); setStatus('error'); return; }
+
+        const masterAddress = await getOrDeployMasterContract(session);
+        const psp = session.providers.privateStateProvider;
+        psp.setContractAddress(masterAddress);
+        const existing = (await psp.get(PRIVATE_STATE_ID) as any) ?? { userSecretKey: getOrCreateUserSecretKey(), voteChoice: 0n, rankedWeights: [0n,0n,0n,0n,0n,0n,0n,0n] };
+
+        const weights: bigint[] = new Array(8).fill(0n);
+        for (const [optIdStr, rank] of Object.entries(ranking)) {
+          const idx = Number(optIdStr) - 1;
+          if (idx >= 0 && idx < 8 && rank > 0) {
+            weights[idx] = BigInt(Math.min(255, Math.max(0, optionCount - rank + 1)));
+          }
+        }
+        await psp.set(PRIVATE_STATE_ID, {
+          ...existing,
+          rankedWeights: weights,
+          attestationSignature: attestResult.sig,
+          attestationCredType: attestResult.credType,
+          attestationPollId: pollIdBytes,
+        });
+
+        setStatus('proving');
+        const result = await callCircuitOnMasterContract(session, 'castCredentialedRankedVote', [pollIdBytes]);
+        const resolvedHash = result.txHash ?? null;
+        const pollIdHex = Buffer.from(pollIdBytes).toString('hex');
+        markVoted(pollIdHex, address);
+        void saveEncryptedVote(address, pollIdHex, { ranking, poll_type: 'ranked', votedAt: Date.now() });
+        setTxHash(resolvedHash);
+        setStatus('done');
+        return resolvedHash;
+      } catch (e: any) {
+        console.error('Credentialed ranked vote failed:', e);
+        setError(e.message || String(e));
+        setStatus('error');
+      }
+    },
+    [session, address],
+  );
+
   return {
     castVote,
     castSimple,
     castSurvey,
     castApproval,
     castHierarchical,
+    castCredentialedSimple,
+    castCredentialedRanked,
     status,
     txHash,
     error,

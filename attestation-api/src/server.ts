@@ -54,6 +54,9 @@ const VerifyCheckSchema = z.object({
 import fs from 'fs';
 import path from 'path';
 import { getUserToken, getUserMeta } from './oauth.js';
+import { signCredential, getProviderPublicKey } from './signing.js';
+import { jubjubPointX, jubjubPointY } from '@midnight-ntwrk/compact-runtime';
+import { CredentialType } from './types.js';
 
 const app = express();
 app.use(cors({
@@ -111,6 +114,45 @@ function persistStore() {
 app.get(['/health', '/api/health'], (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Returns the attestation server's Jubjub public key for on-chain registration
+app.get(['/provider-key', '/api/provider-key'], (_req: Request, res: Response) => {
+  try {
+    const pk = getProviderPublicKey();
+    res.json({
+      x: jubjubPointX(pk).toString(),
+      y: jubjubPointY(pk).toString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Attest endpoints — issue Schnorr credential signatures
+app.post(['/attest/allowlist', '/api/attest/allowlist'], writeLimiter, async (req: Request, res: Response) => {
+  const { communityId, evmAddress, userPubKeyHash, pollIdHash } = req.body as any;
+  if (!communityId || !userPubKeyHash || !pollIdHash) { res.status(400).json({ error: 'communityId, userPubKeyHash, pollIdHash required' }); return; }
+  try {
+    const community = communitiesStore.find((c: any) => c.community_id === communityId);
+    if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
+    const credType = BigInt(CredentialType.ALLOWLIST);
+    const pHash = BigInt(pollIdHash.startsWith('0x') ? pollIdHash : '0x' + pollIdHash);
+    const uHash = BigInt(userPubKeyHash.startsWith('0x') ? userPubKeyHash : '0x' + userPubKeyHash);
+    const sig = signCredential(credType, pHash as any, uHash as any);
+    const pk = getProviderPublicKey();
+    res.json({
+      passed: true,
+      credentialIssued: true,
+      attestation: {
+        announcement: { x: jubjubPointX(sig.announcement).toString(), y: jubjubPointY(sig.announcement).toString() },
+        response: sig.response.toString(),
+        providerPk: { x: jubjubPointX(pk).toString(), y: jubjubPointY(pk).toString() },
+        credType: credType.toString(),
+      },
+    });
+  } catch (err: any) { res.status(500).json({ error: err.message }); }
+});
+
 
 
 
@@ -823,47 +865,3 @@ app.delete(['/communities/:id/posts/:postId', '/api/communities/:id/posts/:postI
 // ── Community Posts ───────────────────────────────────────────────────────────
 // Posts stored in communities.json under posts_feed array per community.
 
-app.get(['/communities/:id/posts', '/api/communities/:id/posts'], (req: Request, res: Response) => {
-  const community = communitiesStore.find((c: any) => c.community_id === req.params.id);
-  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
-  res.json((community as any).posts_feed ?? []);
-});
-
-app.post(['/communities/:id/posts', '/api/communities/:id/posts'], writeLimiter, (req: Request, res: Response) => {
-  const { title, body, author, image_url } = req.body as { title?: string; body?: string; author?: string; image_url?: string };
-  if (!title?.trim() || !body?.trim() || !author?.trim()) {
-    res.status(400).json({ error: 'title, body, author required' }); return;
-  }
-  const community = communitiesStore.find((c: any) => c.community_id === req.params.id);
-  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
-  const post = {
-    id: `post_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    community_id: req.params.id,
-    title: title.slice(0, 200),
-    body: body.slice(0, 5000),
-    author,
-    image_url: image_url?.slice(0, 500) ?? null,
-    created_at: Date.now(),
-  };
-  if (!(community as any).posts_feed) (community as any).posts_feed = [];
-  (community as any).posts_feed.unshift(post);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(communitiesStore, null, 2));
-  res.json(post);
-});
-
-app.delete(['/communities/:id/posts/:postId', '/api/communities/:id/posts/:postId'], (req: Request, res: Response) => {
-  const community = communitiesStore.find((c: any) => c.community_id === req.params.id);
-  if (!community) { res.status(404).json({ error: 'Community not found' }); return; }
-  const feed: any[] = (community as any).posts_feed ?? [];
-  const idx = feed.findIndex((p: any) => p.id === req.params.postId);
-  if (idx === -1) { res.status(404).json({ error: 'Post not found' }); return; }
-  feed.splice(idx, 1);
-  (community as any).posts_feed = feed;
-  fs.writeFileSync(DATA_FILE, JSON.stringify(communitiesStore, null, 2));
-  res.json({ ok: true });
-});
-
-app.listen(PORT, () => {
-  console.log(`Eclipse Attestation & Metadata API running on port ${PORT}`);
-  console.log(`Pinata IPFS: ${PINATA_JWT ? '✅ real uploads' : '⚠️  fake CIDs (set PINATA_JWT)'}`);
-});

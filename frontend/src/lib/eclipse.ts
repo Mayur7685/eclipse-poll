@@ -85,6 +85,12 @@ export function createInitialPrivateState(userSecretKey?: Uint8Array): EclipsePo
       [0n,0n,0n,0n,0n,0n,0n,0n],
     ],
     layerParents: [0n, 0n, 0n, 0n],
+    attestationSignature: null,
+    attestationCredType: 0n,
+    attestationPollId: new Uint8Array(32),
+    attestationSignature: null,
+    attestationCredType: 0n,
+    attestationPollId: new Uint8Array(32),
     layerWeights: [
       [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
       [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
@@ -92,6 +98,12 @@ export function createInitialPrivateState(userSecretKey?: Uint8Array): EclipsePo
       [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
     ],
     layerParents: [0n, 0n, 0n, 0n],
+    attestationSignature: null,
+    attestationCredType: 0n,
+    attestationPollId: new Uint8Array(32),
+    attestationSignature: null,
+    attestationCredType: 0n,
+    attestationPollId: new Uint8Array(32),
   };
 }
 
