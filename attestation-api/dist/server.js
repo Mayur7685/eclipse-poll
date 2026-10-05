@@ -906,5 +906,7 @@ app.delete(['/communities/:id/posts/:postId', '/api/communities/:id/posts/:postI
     fs.writeFileSync(DATA_FILE, JSON.stringify(communitiesStore, null, 2));
     res.json({ ok: true });
 });
-// ── Community Posts ───────────────────────────────────────────────────────────
-// Posts stored in communities.json under posts_feed array per community.
+app.listen(PORT, () => {
+    console.log(`Eclipse Attestation & Metadata API running on port ${PORT}`);
+    console.log(`Pinata IPFS: ${PINATA_JWT ? '\u2705 real uploads' : '\u26a0\ufe0f  fake CIDs (set PINATA_JWT)'}`);
+});
