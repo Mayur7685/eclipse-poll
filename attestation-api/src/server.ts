@@ -484,6 +484,77 @@ app.post(['/verify/check', '/api/verify/check'], async (req: Request, res: Respo
 });
 
 
+// ── Verify requirements + issue Schnorr attestation ──────────────────────────
+// POST /verify/credential-params
+// Body: { communityId, evmAddress, connectedAccounts, pollIdHash, userPubKeyHash }
+// Returns: { passed, results, attestation? }
+// attestation = { announcement: {x,y}, response, credType } — used as witness in ZK circuit
+app.post(['/verify/credential-params', '/api/verify/credential-params'], writeLimiter, async (req: Request, res: Response) => {
+  const { communityId, evmAddress, connectedAccounts = [], pollIdHash, userPubKeyHash } = req.body;
+  const community = communitiesStore.find((c) => c.community_id === communityId);
+
+  if (!community) {
+    res.json({
+      passed: true,
+      results: [{ requirementId: 'auto', passed: true, message: 'Community not found — treating as open' }],
+    });
+    return;
+  }
+
+  const results = await checkRequirements(community, evmAddress ?? '', connectedAccounts);
+
+  const groups = community?.requirement_groups ?? [];
+  let passed: boolean;
+  if (groups.length === 0) {
+    passed = true;
+  } else {
+    passed = groups.some((group: any) => {
+      const groupReqs = group.requirements ?? [];
+      if (groupReqs.length === 0) return true;
+      if (group.logic === 'OR') {
+        return groupReqs.some((req: any) =>
+          results.find((r: any) => r.requirementId === (req.id ?? req.type))?.passed
+        );
+      }
+      return groupReqs.every((req: any) =>
+        results.find((r: any) => r.requirementId === (req.id ?? req.type))?.passed
+      );
+    });
+  }
+
+  if (!passed) {
+    res.json({ passed: false, results });
+    return;
+  }
+
+  // Issue Schnorr attestation
+  try {
+    const credType = BigInt(community.credential_type ?? 1);
+    const pollId   = BigInt(pollIdHash ?? '0x0');
+    const userPk   = BigInt(userPubKeyHash ?? '0x0');
+
+    const sig = signCredential(credType, pollId, userPk);
+
+    res.json({
+      passed: true,
+      results,
+      credentialIssued: true,
+      attestation: {
+        announcement: {
+          x: jubjubPointX(sig.announcement).toString(),
+          y: jubjubPointY(sig.announcement).toString(),
+        },
+        response: sig.response.toString(),
+        credType:  credType.toString(),
+      },
+    });
+  } catch (err: any) {
+    console.error('[verify/credential-params] signing error:', err?.message);
+    res.status(500).json({ error: 'Failed to issue attestation', detail: err?.message });
+  }
+});
+
+
 // --- Pinata IPFS Proxy ---
 
 const PINATA_JWT = process.env.PINATA_JWT;
