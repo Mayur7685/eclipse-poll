@@ -13,6 +13,7 @@ import {
 } from '../lib/eclipse';
 import { markVoted } from '../lib/utils';
 import { encryptJSON } from '../lib/submissionCrypto';
+import { fromHex } from '../lib/midnight';
 
 const VERIFIER = import.meta.env.VITE_VERIFIER_URL ?? 'http://localhost:4000';
 
@@ -494,7 +495,9 @@ export function useVoting() {
 
       try {
         const VERIFIER = import.meta.env.VITE_VERIFIER_URL ?? 'http://localhost:4000';
-        const communityIdBytes = new TextEncoder().encode(communityId.padEnd(32, '\0')).slice(0, 32);
+        // communityId is a hex string like '0x000...42da4f9c' — must use fromHex to get the same
+        // bytes that were passed to registerCommunity on-chain
+        const communityIdBytes = fromHex(communityId.replace(/^0x/, '').padStart(64, '0'));
         const communityIdHex = '0x' + Buffer.from(communityIdBytes).toString('hex');
 
         // Get Schnorr attestation for community (pollIdHash = communityId hash)
