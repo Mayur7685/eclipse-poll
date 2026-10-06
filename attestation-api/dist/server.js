@@ -131,13 +131,18 @@ app.post(['/attest/allowlist', '/api/attest/allowlist'], writeLimiter, async (re
             return;
         }
         const credType = BigInt(CredentialType.ALLOWLIST);
+        const FIELD_MOD = 0x0e7db4ea6533afa906673b0101343b00a6682093ccc81082d0970e5ed6f72cb7n;
         const toBigIntSafe = (val) => {
+            let n;
             if (/^0x[0-9a-fA-F]+$/.test(val))
-                return BigInt(val);
-            if (/^[0-9a-fA-F]{32,}$/.test(val))
-                return BigInt('0x' + val);
-            const hash = createHash('sha256').update(val).digest('hex');
-            return BigInt('0x' + hash);
+                n = BigInt(val);
+            else if (/^[0-9a-fA-F]{32,}$/.test(val))
+                n = BigInt('0x' + val);
+            else {
+                const h = createHash('sha256').update(val).digest('hex');
+                n = BigInt('0x' + h);
+            }
+            return n % FIELD_MOD;
         };
         const pHash = toBigIntSafe(pollIdHash ?? '0x0');
         const uHash = toBigIntSafe(userPubKeyHash ?? '0x0');
@@ -546,22 +551,29 @@ app.post(['/verify/credential-params', '/api/verify/credential-params'], writeLi
     // Issue Schnorr attestation
     try {
         const credType = BigInt(community.credential_type ?? 1);
-        // Safely convert to BigInt — values may be hex strings OR arbitrary strings (e.g. Midnight addresses)
-        const toBigIntSafe = (val) => {
+        // JubJub base field modulus — all field inputs must be < this value
+        const FIELD_MOD = 0x0e7db4ea6533afa906673b0101343b00a6682093ccc81082d0970e5ed6f72cb7n;
+        // Safely convert to BigInt within the JubJub field.
+        // Values may be hex strings OR arbitrary strings (e.g. Midnight bech32 addresses).
+        const toFieldSafe = (val) => {
             if (!val)
                 return 0n;
             const s = String(val);
-            // Pure hex (0x prefixed or raw 64-char hex)
-            if (/^0x[0-9a-fA-F]+$/.test(s))
-                return BigInt(s);
-            if (/^[0-9a-fA-F]{32,}$/.test(s))
-                return BigInt('0x' + s);
-            // Arbitrary string — hash it with SHA-256 to get a stable bigint
-            const hash = createHash('sha256').update(s).digest('hex');
-            return BigInt('0x' + hash);
+            let n;
+            if (/^0x[0-9a-fA-F]+$/.test(s)) {
+                n = BigInt(s);
+            }
+            else if (/^[0-9a-fA-F]{32,}$/.test(s)) {
+                n = BigInt('0x' + s);
+            }
+            else {
+                const hash = createHash('sha256').update(s).digest('hex');
+                n = BigInt('0x' + hash);
+            }
+            return n % FIELD_MOD;
         };
-        const pollId = toBigIntSafe(pollIdHash);
-        const userPk = toBigIntSafe(userPubKeyHash);
+        const pollId = toFieldSafe(pollIdHash);
+        const userPk = toFieldSafe(userPubKeyHash);
         const sig = signCredential(credType, pollId, userPk);
         res.json({
             passed: true,
