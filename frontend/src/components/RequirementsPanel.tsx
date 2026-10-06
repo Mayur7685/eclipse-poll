@@ -24,7 +24,7 @@ function OAuthConnectButton({
   isConnected: boolean
 }) {
   if (isConnected) {
-    return <span className="text-xs font-semibold text-[#10B981] shrink-0">✓ Connected</span>
+    return <span className="text-xs font-semibold text-[#10B981] shrink-0 flex items-center gap-1"><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>Connected</span>
   }
   const spinning = isConnecting === providerType
   return (
@@ -185,8 +185,11 @@ export default function RequirementsPanel({
                     </div>
                     {result && (
                       <div className="flex flex-col items-end gap-0.5 min-w-0 max-w-[55%]">
-                        <span className={`text-xs font-semibold shrink-0 ${result.passed ? 'text-[#10B981]' : 'text-red-500'}`}>
-                          {result.passed ? '✓ PASS' : '✕ FAIL'}
+                        <span className={`text-xs font-semibold shrink-0 flex items-center gap-1 ${result.passed ? 'text-[#10B981]' : 'text-red-500'}`}>
+                          {result.passed
+                            ? <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>PASS</>
+                            : <><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>FAIL</>
+                          }
                         </span>
                         {result.error && (
                           <span className="text-[10px] text-red-400 text-right leading-tight">
@@ -312,8 +315,9 @@ export default function RequirementsPanel({
               : 'Verify & Get Credential'}
           </button>
         ) : (
-          <p className="text-sm text-center text-green-700 font-medium">
-            ✓ Attestation active
+          <p className="text-sm text-center text-green-700 font-medium flex items-center justify-center gap-1">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Attestation active
           </p>
         )}
       </div>

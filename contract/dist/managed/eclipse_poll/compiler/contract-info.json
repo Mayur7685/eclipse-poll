@@ -697,14 +697,17 @@
         "length": 32
       },
       "value": {
-        "type-name": "Set",
-        "type": {
+        "type-name": "Map",
+        "key": {
           "type-name": "Alias",
           "name": "Nullifier",
           "type": {
             "type-name": "Bytes",
             "length": 32
           }
+        },
+        "value": {
+          "type-name": "Counter"
         }
       }
     }

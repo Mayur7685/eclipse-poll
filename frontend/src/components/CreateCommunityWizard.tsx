@@ -187,7 +187,7 @@ function RequirementEditor({ req, onChange, onRemove }: {
         )}
         <button onClick={onRemove}
           className="px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm">
-          ✕
+          <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       {req.type === 'TOKEN_BALANCE' && (

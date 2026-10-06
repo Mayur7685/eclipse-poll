@@ -9,7 +9,7 @@ import type { CommunityConfig, ConnectedAccount } from '../types'
 
 function StatusBadge({ status }: { status: 'claimed' | 'none' | 'claiming' }) {
   if (status === 'claimed')
-    return <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">✓ Credential on-chain</span>
+    return <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full"><svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Credential on-chain</span>
   if (status === 'claiming')
     return <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full animate-pulse">Claiming…</span>
   return <span className="text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">No credential</span>
@@ -149,7 +149,7 @@ export default function CredentialsHub() {
                 {claimed && (
                   <div className="px-5 pb-4">
                     <p className="text-xs text-emerald-600 font-medium">
-                      ✓ Your credential is stored on-chain. You can vote in all polls in this community without re-verifying.
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Your credential is stored on-chain. You can vote in all polls in this community without re-verifying.
                     </p>
                   </div>
                 )}

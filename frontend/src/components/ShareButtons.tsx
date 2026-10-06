@@ -9,7 +9,7 @@ interface Props {
 export default function ShareButtons({ url, title, description }: Props) {
   const [copied, setCopied] = useState(false)
 
-  const text = description ?? `🗳️ ${title} — Vote anonymously with ZK proofs on Eclipse Poll`
+  const text = description ?? `${title} — Vote anonymously with ZK proofs on Eclipse Poll`
 
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
   const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`

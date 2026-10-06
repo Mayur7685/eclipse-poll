@@ -3,9 +3,10 @@
 
 import { useState, useEffect } from 'react'
 import { useWallet } from '../hooks/useWallet'
+import { useVoting } from '../hooks/useVoting'
+import { useCredentials } from '../contexts/CredentialContext'
 import { useCredentialHub } from '../hooks/useCredentialHub'
 import { getCredentialParams } from '../lib/verifier'
-import { vpTextColour, vpBarColour } from '../lib/decay'
 import ConnectorSelector from './ConnectorSelector'
 import type { CommunityConfig, ConnectedAccount, CheckResult, Requirement } from '../types'
 
@@ -95,8 +96,13 @@ function DecayBar({ progress, daysLeft, periods, vpPct }: {
 interface Props { community: CommunityConfig }
 
 export default function CredentialHub({ community }: Props) {
-  const { address, isConnected }  = useWallet()
+  const { address, isConnected, isReconnecting }  = useWallet()
   const hub = useCredentialHub(community)
+  const { claimCommunityCredential } = useVoting()
+  const { markCredentialClaimed, hasCredential } = useCredentials()
+
+  // If user has already claimed via CredentialsHub page, show as active
+  const alreadyClaimed = hasCredential(community.community_id)
 
   const allReqs      = community.requirement_groups.flatMap(g => g.requirements)
   const isFreeOnly   = allReqs.every(r => r.type === 'FREE')
@@ -123,6 +129,7 @@ export default function CredentialHub({ community }: Props) {
     setIssuing(true); setIssueError(null); setResults(null); setIssueStatus('idle'); setIssueTxHash(null)
 
     try {
+      // 1. Verify eligibility with API
       const evmAddress = address as string
       const res = await getCredentialParams(community.community_id, evmAddress, accounts)
       setResults(res.results ?? null)
@@ -137,9 +144,17 @@ export default function CredentialHub({ community }: Props) {
       setIssueStatus('issuing')
       setIssuing(false)
 
-      // Verifier already issued Schnorr attestation on Midnight — just wait for confirmation
-      const hash = res.txHash ?? null
-      setIssueTxHash(hash as `0x${string}` | null)
+      // 2. Submit ZK proof on-chain via claimCommunityCredential circuit
+      const result = await claimCommunityCredential(community.community_id, accounts)
+      if (!result) {
+        setIssueStatus('error')
+        setIssueError('ZK proof failed. Check wallet and try again.')
+        return
+      }
+
+      // 3. Mark claimed in CredentialContext (persists across navigation)
+      markCredentialClaimed(community.community_id, community.credential_type ?? 1, result.txHash)
+      setIssueTxHash(result.txHash)
       setIssueStatus('done')
       setTimeout(() => void hub.refresh(), 2_000)
     } catch (e: unknown) {
@@ -159,7 +174,9 @@ export default function CredentialHub({ community }: Props) {
   // A credential with eligibleVotes === 0 was issued before the votingWeight scaling fix.
   // Treat it the same as "no credential" so the user can re-issue with corrected weight.
   const credBroken = !!hub.credential && hub.eligibleVotes === 0
-  const hasCred    = !!hub.credential && !hub.isExpired && !credBroken
+  // hasCred: either the on-chain credential exists via the hub, OR the user has
+  // already claimed it via the CredentialsHub page (CredentialContext)
+  const hasCred    = (!!hub.credential && !hub.isExpired && !credBroken) || alreadyClaimed
 
   return (
     <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-sm">
@@ -169,7 +186,10 @@ export default function CredentialHub({ community }: Props) {
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm
               ${hasCred ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
-              {hasCred ? '✓' : '○'}
+              {hasCred
+                ? <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                : <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="9"/></svg>
+              }
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">Voting Eligibility</h3>
@@ -224,7 +244,10 @@ export default function CredentialHub({ community }: Props) {
                     <span className="text-xs text-gray-400">{weight} vote{weight !== 1 ? 's' : ''}</span>
                     {result && (
                       <span className={`text-xs font-semibold ${result.passed ? 'text-emerald-600' : 'text-red-500'}`}>
-                        {result.passed ? '✓' : '✕'}
+                        {result.passed
+                          ? <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                          : <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        }
                       </span>
                     )}
                   </div>
@@ -265,12 +288,19 @@ export default function CredentialHub({ community }: Props) {
           <ConnectorSelector accounts={accounts} onChange={setAccounts} />
         )}
 
-        {/* 3-number panel */}
+        {/* Credential active message */}
         {hasCred && (
-          <>
-            <ThreeNumbers ev={hub.eligibleVotes} vp={hub.vpPct} cv={hub.cv} />
-            <DecayBar progress={hub.progress} daysLeft={hub.daysLeft} periods={hub.periods} vpPct={hub.vpPct} />
-          </>
+          <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+            <svg className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-emerald-800">Credential active</p>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                You are eligible to vote in all polls in this community.
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Issuance feedback */}
@@ -309,7 +339,12 @@ export default function CredentialHub({ community }: Props) {
         )}
 
         {/* Actions */}
-        {!isConnected ? (
+        {isReconnecting ? (
+          <div className="flex items-center justify-center gap-2 py-3">
+            <div className="w-4 h-4 border-2 border-[#0070F3] border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm text-blue-600">Reconnecting wallet…</span>
+          </div>
+        ) : !isConnected ? (
           <p className="text-center text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
             Connect your Midnight wallet to check eligibility.
           </p>
@@ -343,7 +378,7 @@ export default function CredentialHub({ community }: Props) {
       <div className={`px-5 py-3 text-xs font-medium text-white
         ${hasCred ? 'bg-emerald-500' : 'bg-[#0070F3]'}`}>
         {hasCred
-          ? `${hub.cv.toLocaleString()} counted vote${hub.cv !== 1 ? 's' : ''} · ${hub.vpPct}% voting power`
+          ? 'Credential active — eligible to vote in this community'
           : isFreeOnly
           ? 'Open community — anyone can vote. One credential per wallet.'
           : 'Verifier checks eligibility off-chain. Your wallet submits on Midnight Network.'}

@@ -194,8 +194,8 @@ export type Ledger = {
     lookup(key_0: Uint8Array): {
       isEmpty(): boolean;
       size(): bigint;
-      member(elem_0: Nullifier): boolean;
-      [Symbol.iterator](): Iterator<Nullifier>
+      member(key_1: Nullifier): boolean;
+      lookup(key_1: Nullifier): { read(): bigint }
     }
   };
 }

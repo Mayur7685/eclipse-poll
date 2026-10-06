@@ -67,5 +67,5 @@ export function signCredential(credType, pollIdHash, userPubKeyHash) {
     const cFull = schnorrChallengeHash(jubjubPointX(R), jubjubPointY(R), jubjubPointX(pk), jubjubPointY(pk), [credType, pollIdHash, userPubKeyHash]);
     const c = cFull % TWO_248;
     const s = (((k + c * sk) % JUBJUB_ORDER) + JUBJUB_ORDER) % JUBJUB_ORDER;
-    return { announcement: R, response: s, providerPk: pk };
+    return { announcement: R, response: s, providerPk: pk, nonce: k };
 }

@@ -64,7 +64,7 @@ export default function LandingPage() {
 
           <div className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-1.5 rounded-full text-xs font-medium mb-10">
             <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_1px_rgba(16,185,129,0.6)]" />
-            Midnight Network · Preprod ZK · Live ✓
+            Midnight Network · Preprod ZK · Live <span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"/>
           </div>
 
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.06]">

@@ -1,188 +1,124 @@
-# Eclipse Poll — Privacy-First ZK Governance on Midnight Network
+# Eclipse Poll
 
-Eclipse Poll is a privacy-preserving governance dApp built on **Midnight Network** using **Compact** zero-knowledge smart contracts. Individual votes are never revealed — only aggregate tallies are published on-chain.
+Privacy-first governance dApp built on [Midnight Network](https://midnight.network).
+Votes are ZK proofs — the network knows *a vote happened*, not *who voted* or *what they chose*.
 
-> Built for Midnight Hackathon · Preprod ZK Contract · 1AM Wallet
-
----
-
-## Screenshots
-
-### Contract Compilation
-![Contract Compilation](https://eclipse-poll.vercel.app/compiled.png)
-*5 Compact ZK circuits compiled — castBinaryVote, castRankedVote, closePoll, createPoll, registerCommunity*
-
-### Contract Deployed on Midnight Network
-![Contract Deployed](https://eclipse-poll.vercel.app/deployed.png)
-*Contract `0x06fc9596...b1ba2f` deployed on Midnight Preprod — DEPLOYED status, castBinaryVote entry point visible*
+**Live:** https://eclipse-poll.vercel.app  
+**API:** https://eclipse-poll-api-h0a8.onrender.com  
+**Contract (preprod):** `9b22a2382cdd8e76f758c6bee6e2b6b2c85cbdc6aa9eed01dbc0342cddbacbcb`  
+**Explorer:** https://explorer.1am.xyz/contract/9b22a2382cdd8e76f758c6bee6e2b6b2c85cbdc6aa9eed01dbc0342cddbacbcb?network=preprod
 
 ---
 
-## Demo Video
+## Poll Types
 
-[![Eclipse Poll Demo](https://img.youtube.com/vi/DmC5zzCP9_8/0.jpg)](https://youtu.be/DmC5zzCP9_8)
+| Type | Circuit | Description |
+|------|---------|-------------|
+| Single Choice | `castBinaryVote` | Pick one — ZK hides the choice |
+| Ranked Choice | `castRankedVote` | Borda count ranking |
+| Approval | `castApprovalVote` | Select all you approve of |
+| Hierarchical | `castHierarchicalVote` | Multi-layer MDCT voting |
 
-Watch the full demo: [https://youtu.be/DmC5zzCP9_8](https://youtu.be/DmC5zzCP9_8)
-
-Raw Video : [https://youtu.be/xLlUTlCEv9s](https://youtu.be/xLlUTlCEv9s)
-
----
-
-## Live Demo
-
-| Service | URL |
-|---|---|
-| Frontend | [eclipse-poll.vercel.app](https://eclipse-poll.vercel.app) |
-| Attestation API | [eclipse-poll-api-h0a8.onrender.com](https://eclipse-poll-api-h0a8.onrender.com) |
-| Contract (Preprod) | [`06fc9596...607b1ba2f`](https://explorer.1am.xyz/contract/06fc9596f1c12928bd7904f927b995bf727713fa292679b300900ae607b1ba2f?network=preprod) |
+Credentialed variants (`castCredentialedBinaryVote`, `castCredentialedRankedVote`) verify a Schnorr attestation inside the ZK circuit. Free polls have **zero** ec_mul ops — no overhead.
 
 ---
 
-## Features (v1 — Current)
+## Credential Gating
 
-- **ZK-private voting** via `castBinaryVote` and `castRankedVote` Compact circuits
-- **Single choice and ranked choice polls** — Borda weighted scoring for ranked
-- **Real-time on-chain tally** read from Midnight Indexer — results hidden while poll is open
-- **Community creation** — any address can create a community and host polls
-- **Encrypted vote history** — AES-GCM encrypted submissions stored in Supabase
-- **Encryption key export/import** — recover vote history across devices or after browser clear
-- **ZK proof generation in-browser** via WASM (no server-side proving)
-- **1AM Wallet integration** — the only Midnight Network browser wallet
-- **IPFS metadata** — community/poll details pinned via Pinata
+| Type | Mechanism |
+|------|-----------|
+| Free | Anyone in the community can vote |
+| Allowlist | Schnorr attestation from the attestation provider |
+| Social OAuth | GitHub / Discord / Twitter verification via API |
+
+Users claim credentials once via `claimCommunityCredential` — a nullifier is stored on-chain, no identity revealed. The credential persists; no re-verification per poll.
 
 ---
 
-## Roadmap — Coming Soon
-
-### Identity & Eligibility Connectors
-When Midnight Compact compiler supports conditional ZK circuit paths, full on-chain credential gating will be restored:
-
-- **X / Twitter** — follow a specific account to unlock voting
-- **Discord** — server membership or role requirement
-- **GitHub** — account activity, org membership, repo contributions
-- **Telegram** — group/channel membership
-
-### On-Chain Token & NFT Gating
-Using EVM wallet connection for cross-chain verification:
-
-- ERC-20 token balance threshold
-- ERC-721 / ERC-1155 NFT ownership
-- Multi-chain: Ethereum, Base, Arbitrum, Optimism, Polygon
-
-### Other Features
-- Schnorr attestation on-chain (restore when compiler supports conditional ZK paths)
-- Survey-style multi-question polls
-- DAO treasury integration
-- Hierarchical ranked choice (MDCT voting)
-
----
-
-## Architecture
+## Contract (11 circuits)
 
 ```
-┌─────────────────────────────────────────────────┐
-│  Browser (1AM Wallet + WASM ZK Prover)          │
-│  React + Vite + TypeScript                      │
-└───────────────┬────────────────────────────────┘
-                │ ZK Circuit Txs (callTx)
-                ▼
-┌─────────────────────────────────────────────────┐
-│  Midnight Network Preprod                       │
-│  Compact Smart Contract                         │
-│  ├── registerCommunity()                        │
-│  ├── createPoll()                               │
-│  ├── castBinaryVote()   ← ZK private            │
-│  ├── castRankedVote()   ← ZK private            │
-│  └── closePoll()                                │
-└─────────────────────────────────────────────────┘
-                
-┌─────────────────────────────────────────────────┐
-│  Attestation API (Express.js on Render)         │
-│  ├── Community/Poll metadata (Pinata IPFS)      │
-│  └── Encrypted vote storage (Supabase)         │
-└─────────────────────────────────────────────────┘
+Ledger:
+  communities              Map<Bytes<32>, CommunityOnChainConfig>
+  polls                    Map<PollId, PollConfig>
+  nullifiers               Set<Nullifier>
+  tallies                  Map<PollId, Map<Uint<8>, Counter>>
+  hierarchicalTallies      Map<PollId, Map<Uint<8>, Map<Uint<8>, Counter>>>
+  communityCredentials     Map<Bytes<32>, Map<Nullifier, Counter>>
+  attestationPk            JubjubPoint
+
+Circuits:
+  registerCommunity
+  createPoll
+  castBinaryVote
+  castRankedVote
+  castApprovalVote
+  castHierarchicalVote
+  castCredentialedBinaryVote
+  castCredentialedRankedVote
+  claimCommunityCredential
+  registerAttestationProvider
+  closePoll
 ```
 
 ---
 
-## Tech Stack
+## Stack
 
-| Layer | Technology |
-|---|---|
-| ZK Contract | Midnight Network Compact v0.23 |
-| Contract Runtime | @midnight-ntwrk/compact-runtime 0.16.0 |
-| Ledger | @midnight-ntwrk/ledger-v8 8.0.3 |
-| Frontend | React 18 + Vite + TypeScript |
-| Wallet | 1AM Wallet (window.midnight['1am']) |
-| API | Express.js + TypeScript |
-| Database | Supabase (PostgreSQL, encrypted) |
-| IPFS | Pinata |
-| Deployment | Vercel (frontend) + Render (API) |
+- **Contract:** Compact (Midnight ZK) — compiled to WASM prover keys
+- **Frontend:** React + Vite + TypeScript + Tailwind CSS
+- **Wallet:** 1AM Wallet — ZK proofs generated in-browser
+- **API:** Express + TypeScript — Schnorr signing, OAuth, IPFS, Supabase
+- **DB:** Supabase (AES-GCM encrypted vote history) + JSON (community metadata)
 
 ---
 
-## Quick Start
-
-### Prerequisites
-- Node.js 22+
-- Compact compiler `npx compact compile +0.31.0`
-- 1AM Wallet browser extension (Chrome/Brave)
-- Supabase account (free tier)
-- Pinata account (free tier)
-
-### Setup
+## Local Development
 
 ```bash
-git clone https://github.com/your-org/eclipse-poll
-cd eclipse-poll
-npm install
-
-# Copy env files and fill in values
-cp attestation-api/.env.example attestation-api/.env
-cp frontend/.env.example frontend/.env
-
-# Build everything (contract + API + frontend)
-npm run build
+git clone https://github.com/Mayur7685/eclipse-poll
+cd eclipse-poll && npm install
 ```
 
-### Run locally
+**`attestation-api/.env`:**
+```env
+ATTESTATION_SECRET_KEY=0x271a4d674b01f6516f0155bbb235693fcbe9d4a45ebeaffe976be1e45b55f66c
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+PINATA_JWT=eyJ...
+APP_URL=http://localhost:5173
+PORT=4000
+```
+
+**`frontend/.env`:**
+```env
+VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS=9b22a2382cdd8e76f758c6bee6e2b6b2c85cbdc6aa9eed01dbc0342cddbacbcb
+VITE_MIDNIGHT_INDEXER_WS_URL=wss://indexer.testnet.midnight.network/api/v1/graphql
+VITE_MIDNIGHT_NODE_URL=https://rpc.testnet.midnight.network
+VITE_VERIFIER_URL=http://localhost:4000
+```
 
 ```bash
-# Terminal 1 — Attestation API (port 4000)
-npm run dev --workspace=attestation-api
+# Terminal 1
+cd attestation-api && npm run dev
 
-# Terminal 2 — Frontend (port 5173)
-npm run dev --workspace=frontend
+# Terminal 2
+cd frontend && npm run dev
 ```
 
-Open `http://localhost:5173/admin/setup` → Connect 1AM Wallet → Deploy Contract
-
-### Environment Variables
-
-**`attestation-api/.env`** (minimum required):
-
-| Variable | Description |
-|---|---|
-| `ATTESTATION_SECRET_KEY` | 32-byte hex signing key |
-| `PINATA_JWT` | Pinata API JWT for IPFS uploads |
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (secret) |
-
-**`frontend/.env`** (minimum required):
-
-| Variable | Description |
-|---|---|
-| `VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS` | Deployed contract address |
-| `VITE_VERIFIER_URL` | Attestation API URL |
-| `VITE_PINATA_GATEWAY` | Pinata IPFS gateway |
-
-See `.env.example` files for full documentation.
+Open http://localhost:5173
 
 ---
 
-## Supabase Setup
+## Admin Setup (first deployment)
 
-Run in Supabase SQL Editor:
+1. `/admin/setup` → **Deploy Master Contract**
+2. **Register Attestation Provider** — stores Jubjub public key on-chain
+3. Update `VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS` in `frontend/.env` and `frontend/.env.production`
+
+---
+
+## Supabase
 
 ```sql
 CREATE TABLE submissions (
@@ -192,63 +128,44 @@ CREATE TABLE submissions (
   saved_at   BIGINT  NOT NULL,
   PRIMARY KEY (address, poll_id)
 );
-
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "deny_all_public" ON submissions
-  AS RESTRICTIVE TO public
-  USING (false) WITH CHECK (false);
+  AS RESTRICTIVE TO public USING (false) WITH CHECK (false);
 ```
 
 ---
 
-## Testing
+## Tests
 
 ```bash
-# Contract compile verification (16 tests)
-npm test --workspace=contract
-
-# Attestation API unit tests (5 tests)
-npm test --workspace=attestation-api
-
-# Frontend smoke tests (15 tests)
-npm test --workspace=frontend
+cd contract         && npm test   # 16 compile tests
+cd attestation-api  && npm test   # 5 API tests
+cd frontend         && npm test   # 15 smoke + unit tests
 ```
+
+36 tests total across 3 packages.
 
 ---
 
 ## Deployment
 
-### Frontend → Vercel
-1. Import GitHub repo on [vercel.com](https://vercel.com)
-2. Set env vars from `frontend/.env.example`
-3. Deploy — Vercel uses `vercel.json` automatically
+| Service | Platform | Config |
+|---------|----------|--------|
+| Frontend | Vercel | `vercel.json` |
+| API | Render | `render.yaml` |
+| CI | GitHub Actions | `.github/workflows/ci.yml` |
 
-### API → Render
-1. Connect GitHub repo on [render.com](https://render.com)
-2. Set env vars from `attestation-api/.env.example`
-3. Set `APP_URL` to your Render service URL after first deploy
-
-### Contract → Midnight Preprod
-1. Deploy once via `http://your-app/admin/setup`
-2. Copy contract address to `VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS`
-3. Redeploy frontend with new address
+`contract/dist/` is committed — Vercel serves prover keys without running the compiler.
 
 ---
 
 ## Privacy Model
 
-| Data | Visibility | How |
-|---|---|---|
-| Vote choice | Private forever | ZK witness — never leaves browser |
-| Who voted | Unlinkable | Nullifier hash — no identity link |
-| Aggregate tally | Public after close | On-chain counter increment |
-| Vote history | Encrypted | AES-GCM with user-held key |
-
-The contract uses **zero-knowledge proofs** to verify:
-- The voter knows a valid nullifier (anti-double-vote)
-- The vote choice increments the correct tally counter
-
-Without revealing which option was chosen, who the voter is, or any linkage between votes.
+- Vote choice is a ZK witness — never disclosed on-chain
+- Nullifiers prevent double-voting: `hash(userSecretKey, pollId)`
+- Community credentials store a nullifier — proves membership without revealing identity
+- Schnorr signatures are verified inside the ZK circuit — stay private
+- Vote history in Supabase is AES-GCM encrypted — only the key holder can read it
 
 ---
 

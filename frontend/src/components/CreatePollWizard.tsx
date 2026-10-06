@@ -85,6 +85,7 @@ export default function CreatePollWizard() {
         setCommunityId(preselect);
         setSelectedCommunity(c);
         setNotCreator(!!(c.creator_only && c.creator && address && c.creator.toLowerCase() !== address.toLowerCase()));
+        setCredType((c.credential_type ?? CredentialType.FREE) as CredentialType);
       }
     }
   }, [communities, searchParams, address, communityId]);
@@ -175,8 +176,10 @@ export default function CreatePollWizard() {
 
         {status === 'done' ? (
           <div className="space-y-4 text-center py-6">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto text-2xl">
-              ✓
+            <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
             </div>
             <h2 className="text-xl font-bold text-gray-900">Poll Created!</h2>
             <p className="text-sm text-gray-500">
@@ -214,6 +217,8 @@ export default function CreatePollWizard() {
                   const c = communities.find(c => c.community_id === id) ?? null;
                   setSelectedCommunity(c);
                   setNotCreator(!!(c?.creator_only && c?.creator && address && c.creator.toLowerCase() !== address.toLowerCase()));
+                  // Auto-inherit credential type from community
+                  if (c) setCredType((c.credential_type ?? CredentialType.FREE) as CredentialType);
                 }}
               >
                 <option value="">Select a Community / DAO...</option>
@@ -255,49 +260,81 @@ export default function CreatePollWizard() {
 
             <div>
               <label className={labelCls}>Poll Type</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setPollType(PollType.SIMPLE)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    pollType === PollType.SIMPLE
-                      ? 'border-[#0070F3] bg-blue-50/50 text-[#0070F3] shadow-sm'
-                      : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
-                  }`}
-                >
-                  <p className="text-sm font-bold flex items-center gap-1.5"><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg> Single Choice</p>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                    Pick one option. Simple yes/no or multiple options.
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPollType(PollType.RANKED_CHOICE)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    pollType === PollType.RANKED_CHOICE
-                      ? 'border-[#0070F3] bg-blue-50/50 text-[#0070F3] shadow-sm'
-                      : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
-                  }`}
-                >
-                  <p className="text-sm font-bold flex items-center gap-1.5"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Ranked Choice</p>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                    Rank options by preference. Borda count scoring.
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPollType(PollType.APPROVAL)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    pollType === PollType.APPROVAL
-                      ? 'border-[#0070F3] bg-blue-50/50 text-[#0070F3] shadow-sm'
-                      : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
-                  }`}
-                >
-                  <p className="text-sm font-bold flex items-center gap-1.5"><svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg> Approval</p>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                    Select all that apply. Every approved option gets +1.
-                  </p>
-                </button>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  {
+                    type: PollType.SIMPLE,
+                    icon: (
+                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                      </svg>
+                    ),
+                    label: 'Single Choice',
+                    desc: 'Pick exactly one option',
+                  },
+                  {
+                    type: PollType.RANKED_CHOICE,
+                    icon: (
+                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                      </svg>
+                    ),
+                    label: 'Ranked Choice',
+                    desc: 'Order options by preference',
+                  },
+                  {
+                    type: PollType.APPROVAL,
+                    icon: (
+                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M9 12l2 2 4-4"/>
+                      </svg>
+                    ),
+                    label: 'Approval',
+                    desc: 'Select all you approve of',
+                  },
+                  {
+                    type: PollType.HIERARCHICAL,
+                    icon: (
+                      <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="6" y1="3" x2="6" y2="15"/>
+                        <circle cx="18" cy="6" r="3"/>
+                        <circle cx="6" cy="18" r="3"/>
+                        <circle cx="6" cy="6" r="3"/>
+                        <path d="M18 9a9 9 0 01-9 9"/>
+                      </svg>
+                    ),
+                    label: 'Hierarchical',
+                    desc: 'Multi-layer MDCT voting',
+                  },
+                ] as { type: PollType; icon: React.ReactNode; label: string; desc: string }[]).map(({ type, icon, label, desc }) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setPollType(type)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all ${
+                      pollType === type
+                        ? 'border-[#0070F3] bg-[#0070F3] text-white shadow-md'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {icon}
+                    <div>
+                      <p className="text-sm font-semibold leading-tight">{label}</p>
+                      <p className={`text-xs mt-0.5 leading-tight ${pollType === type ? 'text-blue-100' : 'text-gray-400'}`}>
+                        {desc}
+                      </p>
+                    </div>
+                    {pollType === type && (
+                      <svg className="w-4 h-4 ml-auto shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -314,7 +351,7 @@ export default function CreatePollWizard() {
                         : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    📦 Blocks
+                    Blocks
                   </button>
                   <button
                     type="button"
@@ -325,7 +362,7 @@ export default function CreatePollWizard() {
                         : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    📅 Days
+                    Days
                   </button>
                 </div>
               </div>
@@ -365,15 +402,23 @@ export default function CreatePollWizard() {
 
             <div>
               <label className={labelCls}>Credential Gate</label>
-              <select
-                value={credType}
-                onChange={e => setCredType(Number(e.target.value) as CredentialType)}
-                className={inputCls}
-              >
-                <option value={CredentialType.FREE}>Open to All Members (Free)</option>
-                <option value={CredentialType.ALLOWLIST}>Allowlist (Jubjub Schnorr)</option>
-                <option value={CredentialType.SOCIAL_OAUTH}>Social OAuth Attestation</option>
-              </select>
+              {/* Auto-inherited from the selected community — not editable per-poll */}
+              {selectedCommunity ? (
+                <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-600">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${
+                    credType === 0 ? 'bg-gray-100 text-gray-500 border-gray-200' :
+                    credType === 1 ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                    'bg-purple-50 text-purple-600 border-purple-100'
+                  }`}>
+                    {credType === 0 ? 'FREE' : credType === 1 ? 'ALLOWLIST' : 'SOCIAL'}
+                  </span>
+                  <span className="text-gray-500 text-xs">Inherited from community — voters need a credential to vote</span>
+                </div>
+              ) : (
+                <div className="px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-400">
+                  Select a community first
+                </div>
+              )}
             </div>
 
             <button
@@ -451,7 +496,7 @@ export default function CreatePollWizard() {
                 </p>
                 <p>
                   <span className="font-semibold text-gray-800">Type:</span>{' '}
-                  {pollType === PollType.SIMPLE ? 'Simple Poll' : 'Ranked Choice'}
+                  {pollType === PollType.SIMPLE ? 'Single Choice' : pollType === PollType.RANKED_CHOICE ? 'Ranked Choice' : pollType === PollType.APPROVAL ? 'Approval' : 'Hierarchical'}
                 </p>
                 <p>
                   <span className="font-semibold text-gray-800">Options:</span> {options.join(', ')}

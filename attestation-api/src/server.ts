@@ -156,6 +156,7 @@ app.post(['/attest/allowlist', '/api/attest/allowlist'], writeLimiter, async (re
         response: sig.response.toString(),
         providerPk: { x: jubjubPointX(pk).toString(), y: jubjubPointY(pk).toString() },
         credType: credType.toString(),
+        nonce: sig.nonce.toString(),
       },
     });
   } catch (err: any) { res.status(500).json({ error: err.message }); }
@@ -575,6 +576,7 @@ app.post(['/verify/credential-params', '/api/verify/credential-params'], writeLi
         },
         response: sig.response.toString(),
         credType:  credType.toString(),
+        nonce:     sig.nonce.toString(),
       },
     });
   } catch (err: any) {

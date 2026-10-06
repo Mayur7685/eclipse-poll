@@ -6,10 +6,10 @@ import { getCommunity } from '../lib/utils'
 
 const ICONS = [
   { bg: 'bg-blue-50 text-blue-600 border-blue-100',    icon: '◆' },
-  { bg: 'bg-green-50 text-green-600 border-green-100',  icon: '✦' },
+  { bg: 'bg-green-50 text-green-600 border-green-100',  icon: '◆' },
   { bg: 'bg-indigo-50 text-indigo-600 border-indigo-100', icon: '⬡' },
   { bg: 'bg-orange-50 text-orange-600 border-orange-100', icon: '◉' },
-  { bg: 'bg-pink-50 text-pink-600 border-pink-100',     icon: '❋' },
+  { bg: 'bg-pink-50 text-pink-600 border-pink-100',     icon: '◈' },
   { bg: 'bg-yellow-50 text-yellow-600 border-yellow-100', icon: '◈' },
 ]
 

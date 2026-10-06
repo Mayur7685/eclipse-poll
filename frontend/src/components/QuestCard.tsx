@@ -41,8 +41,9 @@ export default function QuestCard({ quest, getProgress, onRequestReveal, isCreat
           <p className="text-xs text-gray-500 mt-0.5">{quest.description}</p>
         </div>
         {progress?.completed && (
-          <span className="shrink-0 text-xs bg-green-50 text-green-600 border border-green-100 px-2.5 py-1 rounded-full font-medium">
-            ✓ Complete
+          <span className="shrink-0 text-xs bg-green-50 text-green-600 border border-green-100 px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Complete
           </span>
         )}
       </div>

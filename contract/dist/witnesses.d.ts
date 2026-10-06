@@ -5,15 +5,11 @@ export type EclipsePollPrivateState = {
     approvalChoices: boolean[];
     layerWeights: bigint[][];
     layerParents: bigint[];
-    attestationSignature: {
-        announcement: {
-            x: bigint;
-            y: bigint;
-        };
-        response: bigint;
-    } | null;
+    attestationNonce: bigint | null;
+    attestationResponse: bigint;
     attestationCredType: bigint;
     attestationPollId: Uint8Array;
+    attestationSignature: null;
 };
 export declare const witnesses: {
     getUserSecret: (ctx: {
@@ -37,10 +33,7 @@ export declare const witnesses: {
     getAttestation: (ctx: {
         privateState: EclipsePollPrivateState;
     }) => (EclipsePollPrivateState | (bigint | Uint8Array<ArrayBufferLike> | {
-        announcement: {
-            x: bigint;
-            y: bigint;
-        };
+        announcement: import("@midnight-ntwrk/compact-runtime").JubjubPoint;
         response: bigint;
     })[])[];
     getSchnorrReduction: (ctx: {

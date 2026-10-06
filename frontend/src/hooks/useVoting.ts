@@ -351,7 +351,7 @@ export function useVoting() {
     pollIdBytes: Uint8Array,
     address: string,
     connectedAccounts: any[] = [],
-  ): Promise<{ sig: any; credType: bigint } | null> {
+  ): Promise<{ nonce: bigint; response: bigint; credType: bigint } | null> {
     const VERIFIER = import.meta.env.VITE_VERIFIER_URL ?? 'http://localhost:4000';
     const pollIdHex = '0x' + Buffer.from(pollIdBytes).toString('hex');
     try {
@@ -364,13 +364,8 @@ export function useVoting() {
       if (!data.passed || !data.attestation) return null;
       const { attestation } = data;
       return {
-        sig: {
-          announcement: {
-            x: BigInt(attestation.announcement.x),
-            y: BigInt(attestation.announcement.y),
-          },
-          response: BigInt(attestation.response),
-        },
+        nonce:    BigInt(attestation.nonce),
+        response: BigInt(attestation.response),
         credType: BigInt(attestation.credType ?? 1),
       };
     } catch {
@@ -404,7 +399,9 @@ export function useVoting() {
         await psp.set(PRIVATE_STATE_ID, {
           ...existing,
           voteChoice: BigInt(selectedIndex),
-          attestationSignature: attestResult.sig,
+          attestationSignature: null,
+          attestationNonce: attestResult.nonce,
+          attestationResponse: attestResult.response,
           attestationCredType: attestResult.credType,
           attestationPollId: pollIdBytes,
         });
@@ -460,7 +457,9 @@ export function useVoting() {
         await psp.set(PRIVATE_STATE_ID, {
           ...existing,
           rankedWeights: weights,
-          attestationSignature: attestResult.sig,
+          attestationSignature: null,
+          attestationNonce: attestResult.nonce,
+          attestationResponse: attestResult.response,
           attestationCredType: attestResult.credType,
           attestationPollId: pollIdBytes,
         });
@@ -535,7 +534,9 @@ export function useVoting() {
         const existing = (await psp.get(PRIVATE_STATE_ID) as any) ?? createInitialPrivateState();
         await psp.set(PRIVATE_STATE_ID, {
           ...existing,
-          attestationSignature: sig,
+          attestationSignature: null,
+          attestationNonce: BigInt(data.attestation.nonce),
+          attestationResponse: BigInt(data.attestation.response),
           attestationCredType: credType,
           attestationPollId: communityIdBytes,
         });

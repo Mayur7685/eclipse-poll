@@ -84,7 +84,7 @@ export function signCredential(
   credType: bigint,
   pollIdHash: bigint,
   userPubKeyHash: bigint,
-): { announcement: JubjubPoint; response: bigint; providerPk: JubjubPoint } {
+): { announcement: JubjubPoint; response: bigint; providerPk: JubjubPoint; nonce: bigint } {
   const { sk, pk } = SERVER_KEYPAIR;
   const k = randomScalar();
   const R = ecMulGenerator(k);
@@ -98,5 +98,5 @@ export function signCredential(
   const c = cFull % TWO_248;
   const s = (((k + c * sk) % JUBJUB_ORDER) + JUBJUB_ORDER) % JUBJUB_ORDER;
 
-  return { announcement: R, response: s, providerPk: pk };
+  return { announcement: R, response: s, providerPk: pk, nonce: k };
 }

@@ -214,7 +214,7 @@ export default function PollDetail() {
   useEffect(() => {
     if (status === 'done') {
       setAlreadyVoted(true)
-      if (txId) toast.success('Vote cast on Midnight Network! ✓', txId)
+      if (txId) toast.success('Vote cast on Midnight Network!', txId)
     } else if (status === 'error') {
       if (error === 'NO_CREDENTIAL_SYNC') {
         setNoCredential('sync')
@@ -655,7 +655,7 @@ export default function PollDetail() {
                       to={`/communities/${communityId}/credentials`}
                       className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl text-sm transition-colors text-center flex items-center justify-center gap-2"
                     >
-                      🔑 Claim Credential First
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg> Claim Credential First
                     </Link>
                   )}
                   <button
@@ -674,7 +674,7 @@ export default function PollDetail() {
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     )}
                     {alreadyVoted
-                      ? 'Already Voted ✓'
+                      ? 'Already Voted'
                       : status === 'proving'
                       ? 'Generating ZK Proof…'
                       : status === 'confirming'

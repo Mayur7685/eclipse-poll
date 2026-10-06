@@ -49,7 +49,7 @@ function RegisterAttestationStep({ contractAddress }: { contractAddress: string 
   if (isDone) {
     return (
       <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 space-y-1.5">
-        <p className="text-sm font-semibold text-emerald-800">✓ Attestation provider registered</p>
+        <p className="text-sm font-semibold text-emerald-800"><svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Attestation provider registered</p>
         <p className="text-xs text-emerald-600">Credential-gated polls are enabled.</p>
         {txHash && (
           <a href={`https://explorer.1am.xyz/tx/${txHash}?network=preprod`}
@@ -75,7 +75,7 @@ function RegisterAttestationStep({ contractAddress }: { contractAddress: string 
       )}
       {!isConnected && (
         <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-          ⚠️ Connect your 1AM wallet to register on-chain
+          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Connect your 1AM wallet to register on-chain
         </p>
       )}
       <button
@@ -154,7 +154,7 @@ export default function AdminSetup() {
 
         {contractAddress && !showRedeploy ? (
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-semibold text-emerald-800">✓ Contract deployed</p>
+            <p className="text-sm font-semibold text-emerald-800"><svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Contract deployed</p>
 
             {/* Contract address — truncated with copy button */}
             <div className="flex items-center gap-2 bg-white border border-emerald-100 rounded-lg px-3 py-2">
@@ -166,13 +166,13 @@ export default function AdminSetup() {
                 className="shrink-0 text-xs text-emerald-600 hover:text-emerald-800 font-medium transition-colors"
                 title="Copy address"
               >
-                {copied ? '✓ Copied' : 'Copy'}
+                {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
 
             {/* Env var hint — compact, no full address */}
             <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-              ⚠ Already set in <code className="bg-white px-1 rounded font-mono">frontend/.env</code> as{' '}
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Already set in <code className="bg-white px-1 rounded font-mono">frontend/.env</code> as{' '}
               <code className="font-mono">VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS</code>
             </p>
 
@@ -197,11 +197,11 @@ export default function AdminSetup() {
           </button>
         ) : deployStatus === 'done' ? (
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 space-y-3">
-            <p className="text-sm font-semibold text-emerald-800">✓ Contract deployed</p>
+            <p className="text-sm font-semibold text-emerald-800"><svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Contract deployed</p>
             <div className="flex items-center gap-2 bg-white border border-emerald-100 rounded-lg px-3 py-2">
               <span className="text-xs font-mono text-gray-600 truncate flex-1 min-w-0">{contractAddress}</span>
               <button onClick={copyAddress} className="shrink-0 text-xs text-emerald-600 hover:text-emerald-800 font-medium">
-                {copied ? '✓ Copied' : 'Copy'}
+                {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
             {deployTxHash && deployTxHash !== contractAddress && (
@@ -212,7 +212,7 @@ export default function AdminSetup() {
               </a>
             )}
             <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-              ⚠ Already set in <code className="bg-white px-1 rounded font-mono">frontend/.env</code>
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Already set in <code className="bg-white px-1 rounded font-mono">frontend/.env</code>
             </p>
           </div>
         ) : !isConnected && (contractAddress === null || showRedeploy) ? (
