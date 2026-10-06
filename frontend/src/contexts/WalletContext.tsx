@@ -6,6 +6,7 @@ const WALLET_CONNECTED_KEY = 'eclipse:walletConnected:v1';
 interface WalletContextType {
   isConnected: boolean;
   isConnecting: boolean;
+  isReconnecting: boolean;
   address: string | null;
   session: ConnectedSession | null;
   connect: () => Promise<ConnectedSession | null>;
@@ -16,6 +17,7 @@ interface WalletContextType {
 const WalletContext = createContext<WalletContextType>({
   isConnected: false,
   isConnecting: false,
+  isReconnecting: false,
   address: null,
   session: null,
   connect: async () => null,
@@ -27,6 +29,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [session, setSession] = useState<ConnectedSession | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(
+    () => !!localStorage.getItem(WALLET_CONNECTED_KEY) // true on mount if was connected
+  );
   const [error, setError] = useState<string | null>(null);
 
   const connect = async (): Promise<ConnectedSession | null> => {
@@ -76,6 +81,8 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       } catch {
         // Wallet locked or unavailable — clear flag so we don't retry on every load
         if (!cancelled) localStorage.removeItem(WALLET_CONNECTED_KEY);
+      } finally {
+        if (!cancelled) setIsReconnecting(false);
       }
     };
 
@@ -88,6 +95,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       value={{
         isConnected: !!session,
         isConnecting,
+        isReconnecting,
         address,
         session,
         connect,

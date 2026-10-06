@@ -16,7 +16,7 @@ function StatusBadge({ status }: { status: 'claimed' | 'none' | 'claiming' }) {
 }
 
 export default function CredentialsHub() {
-  const { address, isConnected, connect } = useWallet()
+  const { address, isConnected, isReconnecting, connect } = useWallet()
   const { claimCommunityCredential, status: voteStatus, error: voteError } = useVoting()
   const { hasCredential, markCredentialClaimed } = useCredentials()
 
@@ -89,8 +89,15 @@ export default function CredentialsHub() {
         </div>
       </div>
 
-      {/* Wallet gate */}
-      {!isConnected && (
+      {/* Wallet gate — show spinner while auto-reconnecting, not "connect" message */}
+      {isReconnecting && (
+        <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4">
+          <div className="w-4 h-4 border-2 border-[#0070F3] border-t-transparent rounded-full animate-spin shrink-0" />
+          <p className="text-sm text-blue-700">Reconnecting wallet…</p>
+        </div>
+      )}
+
+      {!isConnected && !isReconnecting && (
         <div className="bg-amber-50 border border-amber-100 rounded-2xl px-5 py-4">
           <p className="text-sm text-amber-700 font-medium">Connect your 1AM wallet to claim credentials.</p>
           <button onClick={() => void connect()} className="mt-2 text-xs font-medium text-[#0070F3] hover:underline">Connect Wallet →</button>
@@ -148,7 +155,7 @@ export default function CredentialsHub() {
                 )}
 
                 {/* Not yet claimed — show requirements + claim button */}
-                {!claimed && isConnected && (
+                {!claimed && isConnected && !isReconnecting && (
                   <div className="px-5 pb-5 space-y-3">
                     <RequirementsPanel
                       communityId={community.community_id}
