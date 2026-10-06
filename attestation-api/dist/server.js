@@ -131,8 +131,16 @@ app.post(['/attest/allowlist', '/api/attest/allowlist'], writeLimiter, async (re
             return;
         }
         const credType = BigInt(CredentialType.ALLOWLIST);
-        const pHash = BigInt(pollIdHash.startsWith('0x') ? pollIdHash : '0x' + pollIdHash);
-        const uHash = BigInt(userPubKeyHash.startsWith('0x') ? userPubKeyHash : '0x' + userPubKeyHash);
+        const toBigIntSafe = (val) => {
+            if (/^0x[0-9a-fA-F]+$/.test(val))
+                return BigInt(val);
+            if (/^[0-9a-fA-F]{32,}$/.test(val))
+                return BigInt('0x' + val);
+            const hash = createHash('sha256').update(val).digest('hex');
+            return BigInt('0x' + hash);
+        };
+        const pHash = toBigIntSafe(pollIdHash ?? '0x0');
+        const uHash = toBigIntSafe(userPubKeyHash ?? '0x0');
         const sig = signCredential(credType, pHash, uHash);
         const pk = getProviderPublicKey();
         res.json({
@@ -538,8 +546,22 @@ app.post(['/verify/credential-params', '/api/verify/credential-params'], writeLi
     // Issue Schnorr attestation
     try {
         const credType = BigInt(community.credential_type ?? 1);
-        const pollId = BigInt(pollIdHash ?? '0x0');
-        const userPk = BigInt(userPubKeyHash ?? '0x0');
+        // Safely convert to BigInt — values may be hex strings OR arbitrary strings (e.g. Midnight addresses)
+        const toBigIntSafe = (val) => {
+            if (!val)
+                return 0n;
+            const s = String(val);
+            // Pure hex (0x prefixed or raw 64-char hex)
+            if (/^0x[0-9a-fA-F]+$/.test(s))
+                return BigInt(s);
+            if (/^[0-9a-fA-F]{32,}$/.test(s))
+                return BigInt('0x' + s);
+            // Arbitrary string — hash it with SHA-256 to get a stable bigint
+            const hash = createHash('sha256').update(s).digest('hex');
+            return BigInt('0x' + hash);
+        };
+        const pollId = toBigIntSafe(pollIdHash);
+        const userPk = toBigIntSafe(userPubKeyHash);
         const sig = signCredential(credType, pollId, userPk);
         res.json({
             passed: true,
@@ -917,7 +939,7 @@ app.get(['/key-backup/:address', '/api/key-backup/:address'], async (req, res) =
 // ── Posts ─────────────────────────────────────────────────────────────────────
 // Community posts stored in communities.json alongside poll data.
 // Each post: { id, community_id, title, body, author, created_at, image_url? }
-import { randomUUID } from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 app.get(['/communities/:id/posts', '/api/communities/:id/posts'], (req, res) => {
     const community = communitiesStore.find(c => c.community_id === req.params.id);
     if (!community) {
