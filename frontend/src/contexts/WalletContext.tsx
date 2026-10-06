@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { detectWallet, enableWallet, createConnectedSession, type ConnectedSession } from '../lib/midnight.js';
 
+const WALLET_CONNECTED_KEY = 'eclipse:walletConnected:v1';
+
 interface WalletContextType {
   isConnected: boolean;
   isConnecting: boolean;
@@ -32,6 +34,71 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setIsConnecting(true);
       setError(null);
       const wallet = await detectWallet();
+      const api = await enableWallet(wallet);
+      const sess = await createConnectedSession(api);
+      setSession(sess);
+      setAddress(sess.unshieldedAddress);
+      localStorage.setItem(WALLET_CONNECTED_KEY, '1');
+      return sess;
+    } catch (err: any) {
+      console.error('Wallet connection failed:', err);
+      setError(err.message || 'Failed to connect wallet');
+      return null;
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const disconnect = () => {
+    setSession(null);
+    setAddress(null);
+    localStorage.removeItem(WALLET_CONNECTED_KEY);
+  };
+
+  // Auto-reconnect on mount if wallet was previously connected
+  useEffect(() => {
+    const wasConnected = localStorage.getItem(WALLET_CONNECTED_KEY);
+    if (!wasConnected) return;
+
+    let cancelled = false;
+    const tryReconnect = async () => {
+      try {
+        const wallet = await detectWallet();
+        if (!wallet) return;
+        const api = await enableWallet(wallet);
+        const sess = await createConnectedSession(api);
+        if (!cancelled) {
+          setSession(sess);
+          setAddress(sess.unshieldedAddress);
+        }
+      } catch {
+        // Wallet not available yet or user revoked — clear flag silently
+        if (!cancelled) localStorage.removeItem(WALLET_CONNECTED_KEY);
+      }
+    };
+
+    void tryReconnect();
+    return () => { cancelled = true; };
+  }, []);
+
+  return (
+    <WalletContext.Provider
+      value={{
+        isConnected: !!session,
+        isConnecting,
+        address,
+        session,
+        connect,
+        disconnect,
+        error,
+      }}
+    >
+      {children}
+    </WalletContext.Provider>
+  );
+};
+
+export const useWallet = () => useContext(WalletContext);
       const api = await enableWallet(wallet);
       const sess = await createConnectedSession(api);
       setSession(sess);
