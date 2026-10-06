@@ -1,7 +1,7 @@
 import {
   ecMulGenerator, jubjubPointX, jubjubPointY, type JubjubPoint,
+  transientHash, CompactTypeField, CompactTypeVector,
 } from '@midnight-ntwrk/compact-runtime';
-import { pureCircuits } from 'eclipse-poll-contract';
 import * as crypto from 'crypto';
 import dotenv from 'dotenv';
 import { resolve, dirname } from 'path';
@@ -67,6 +67,19 @@ export function getProviderPublicKey(): JubjubPoint {
   return SERVER_KEYPAIR.pk;
 }
 
+// SchnorrHashInput<3> struct laid out as flat Vector<7, Field>:
+// [ann_x, ann_y, pk_x, pk_y, msg[0], msg[1], msg[2]]
+// Matches the transientHash call inside schnorr.compact schnorrVerify circuit.
+const SCHNORR_HASH_TYPE = new CompactTypeVector(7, CompactTypeField);
+
+function schnorrChallengeHash(
+  ann_x: bigint, ann_y: bigint,
+  pk_x: bigint,  pk_y: bigint,
+  msg: [bigint, bigint, bigint],
+): bigint {
+  return transientHash(SCHNORR_HASH_TYPE, [ann_x, ann_y, pk_x, pk_y, ...msg]);
+}
+
 export function signCredential(
   credType: bigint,
   pollIdHash: bigint,
@@ -76,18 +89,8 @@ export function signCredential(
   const k = randomScalar();
   const R = ecMulGenerator(k);
 
-  // Use the same hash function as the in-circuit schnorrVerify to ensure
-  // the signature will verify correctly inside the ZK circuit.
-  const schnorrChallenge = (pureCircuits as any).schnorrChallenge;
-  if (!schnorrChallenge) {
-    throw new Error(
-      'pureCircuits.schnorrChallenge not found. ' +
-      'Ensure eclipse-poll-contract is compiled and the managed/ directory is up to date.',
-    );
-  }
-
-  const cFull: bigint = schnorrChallenge(
-    jubjubPointX(R), jubjubPointY(R),
+  const cFull: bigint = schnorrChallengeHash(
+    jubjubPointX(R),  jubjubPointY(R),
     jubjubPointX(pk), jubjubPointY(pk),
     [credType, pollIdHash, userPubKeyHash],
   );
