@@ -60,6 +60,11 @@ export ledger tallies: Map<PollId, Map<Uint<8>, Counter>>;
 // parentId=0 means root layer options
 export ledger hierarchicalTallies: Map<PollId, Map<Uint<8>, Map<Uint<8>, Counter>>>;
 
+// Community credentials: communityCredentials[communityId] = Set of nullifiers
+// A nullifier in the set proves the user has a valid credential for that community.
+// Written once via claimCommunityCredential — persistent, no need to re-verify.
+export ledger communityCredentials: Map<Bytes<32>, Set<Nullifier>>;
+
 // --- Witnesses (Private Inputs) ---
 witness getUserSecret(): UserSecretKey;
 witness getVoteChoice(): Uint<8>;
@@ -106,7 +111,33 @@ export circuit registerAttestationProvider(providerPk: JubjubPoint): [] {
   attestationPk = disclose(providerPk);
 }
 
-// --- Community Registration ---
+// --- Claim Community Credential ---
+// User submits Schnorr attestation for a community (not poll-specific).
+// On success: inserts userNullifier into communityCredentials[communityId] set.
+// Nullifier prevents double-claiming. Identity is never revealed.
+export circuit claimCommunityCredential(communityId: Bytes<32>): [] {
+  assert(communities.member(disclose(communityId)), "Community not found");
+  const config = communities.lookup(disclose(communityId));
+  assert(config.credType != CredentialType.FREE, "Community has no credential requirement");
+
+  const sk = getUserSecret();
+  const credNul = computeNullifier(sk, communityId as PollId);
+  assert(!communityCredentials.lookup(disclose(communityId)).member(disclose(credNul)),
+    "Credential already claimed for this community");
+
+  const [sig, credType, _attPollId] = getAttestation();
+  const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
+  const msg: Vector<3, Field> = [
+    disclose(credType) as Field,
+    transientHash<Bytes<32>>(disclose(communityId)),
+    userPkHash
+  ];
+  Schnorr_schnorrVerify<3>(msg, sig, attestationPk);
+
+  communityCredentials.lookup(disclose(communityId)).insert(disclose(credNul));
+}
+
+
 export circuit registerCommunity(
   communityId: Bytes<32>,
   configHash: Bytes<32>,

@@ -52,6 +52,8 @@ export type Witnesses<PS> = {
 export type ImpureCircuits<PS> = {
   registerAttestationProvider(context: __compactRuntime.CircuitContext<PS>,
                               providerPk_0: __compactRuntime.JubjubPoint): __compactRuntime.CircuitResults<PS, []>;
+  claimCommunityCredential(context: __compactRuntime.CircuitContext<PS>,
+                           communityId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   registerCommunity(context: __compactRuntime.CircuitContext<PS>,
                     communityId_0: Uint8Array,
                     configHash_0: Uint8Array,
@@ -78,6 +80,8 @@ export type ImpureCircuits<PS> = {
 export type ProvableCircuits<PS> = {
   registerAttestationProvider(context: __compactRuntime.CircuitContext<PS>,
                               providerPk_0: __compactRuntime.JubjubPoint): __compactRuntime.CircuitResults<PS, []>;
+  claimCommunityCredential(context: __compactRuntime.CircuitContext<PS>,
+                           communityId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   registerCommunity(context: __compactRuntime.CircuitContext<PS>,
                     communityId_0: Uint8Array,
                     configHash_0: Uint8Array,
@@ -107,6 +111,8 @@ export type PureCircuits = {
 export type Circuits<PS> = {
   registerAttestationProvider(context: __compactRuntime.CircuitContext<PS>,
                               providerPk_0: __compactRuntime.JubjubPoint): __compactRuntime.CircuitResults<PS, []>;
+  claimCommunityCredential(context: __compactRuntime.CircuitContext<PS>,
+                           communityId_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   registerCommunity(context: __compactRuntime.CircuitContext<PS>,
                     communityId_0: Uint8Array,
                     configHash_0: Uint8Array,
@@ -179,6 +185,17 @@ export type Ledger = {
         member(key_2: bigint): boolean;
         lookup(key_2: bigint): { read(): bigint }
       }
+    }
+  };
+  communityCredentials: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): {
+      isEmpty(): boolean;
+      size(): bigint;
+      member(elem_0: Nullifier): boolean;
+      [Symbol.iterator](): Iterator<Nullifier>
     }
   };
 }

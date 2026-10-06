@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useWallet } from '../hooks/useWallet'
 import { useVoting } from '../hooks/useVoting'
 import { useToast } from '../components/Toast'
+import { useCredentials } from '../contexts/CredentialContext'
 import { getPoll, getBlockHeight } from '../lib/utils'
 import { getCommunityById } from '../lib/verifier'
 import { vpTextColour } from '../lib/decay'
@@ -82,6 +83,7 @@ export default function PollDetail() {
   const { communityId, pollId } = useParams<{ communityId: string; pollId: string }>()
   const { address, isConnected } = useWallet()
   const { castVote, castSimple, castApproval, castHierarchical, castCredentialedSimple, castCredentialedRanked, status, txHash: txId, error } = useVoting()
+  const { hasCredential } = useCredentials()
   const toast = useToast()
 
   const [poll, setPoll]             = useState<Poll | null>(null)
@@ -647,6 +649,15 @@ export default function PollDetail() {
                     className="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium rounded-xl text-sm transition-colors">
                     Browse
                   </button>
+                  {/* Credential gate warning */}
+                  {((poll?.required_credential_type ?? 0) > 0 || (poll?.cred_type ?? 0) > 0) && !hasCredential(communityId ?? '') && (
+                    <Link
+                      to={`/communities/${communityId}/credentials`}
+                      className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl text-sm transition-colors text-center flex items-center justify-center gap-2"
+                    >
+                      🔑 Claim Credential First
+                    </Link>
+                  )}
                   <button
                     onClick={() => setShowConfirm(true)}
                     disabled={
@@ -654,7 +665,8 @@ export default function PollDetail() {
                       !(poll?.poll_type === 'simple' ? selectedOption !== null : poll?.poll_type === 'approval' ? hasApproved : hasRanked) ||
                       status === 'proving' ||
                       status === 'confirming' ||
-                      status === 'attesting'
+                      status === 'attesting' ||
+                      (((poll?.required_credential_type ?? 0) > 0 || (poll?.cred_type ?? 0) > 0) && !hasCredential(communityId ?? ''))
                     }
                     className="flex-1 py-3 bg-[#0070F3] hover:bg-blue-600 text-white font-medium rounded-xl text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >

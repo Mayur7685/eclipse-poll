@@ -9,6 +9,7 @@ import {
   callCircuitOnMasterContract,
   getOrDeployMasterContract,
   getOrCreateUserSecretKey,
+  createInitialPrivateState,
 } from '../lib/eclipse';
 import { markVoted } from '../lib/utils';
 import { encryptJSON } from '../lib/submissionCrypto';
@@ -481,6 +482,77 @@ export function useVoting() {
     [session, address],
   );
 
+  const claimCommunityCredential = useCallback(
+    async (
+      communityId: string,
+      connectedAccounts: any[] = [],
+    ): Promise<{ txHash: string | null } | null> => {
+      if (!session || !address) { setError('Wallet not connected'); return null; }
+      setStatus('attesting');
+      setError(null);
+      setTxHash(null);
+
+      try {
+        const VERIFIER = import.meta.env.VITE_VERIFIER_URL ?? 'http://localhost:4000';
+        const communityIdBytes = new TextEncoder().encode(communityId.padEnd(32, '\0')).slice(0, 32);
+        const communityIdHex = '0x' + Buffer.from(communityIdBytes).toString('hex');
+
+        // Get Schnorr attestation for community (pollIdHash = communityId hash)
+        const res = await fetch(`${VERIFIER}/verify/credential-params`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            communityId,
+            evmAddress: address,
+            connectedAccounts,
+            pollIdHash: communityIdHex,
+            userPubKeyHash: address,
+          }),
+        });
+        const data = await res.json();
+        if (!data.passed || !data.attestation) {
+          setError('Credential verification failed. Check your eligibility.');
+          setStatus('error');
+          return null;
+        }
+
+        const sig = {
+          announcement: {
+            x: BigInt(data.attestation.announcement.x),
+            y: BigInt(data.attestation.announcement.y),
+          },
+          response: BigInt(data.attestation.response),
+        };
+        const credType = BigInt(data.attestation.credType ?? 1);
+
+        // Set private state with community attestation
+        const masterAddress = await getOrDeployMasterContract(session);
+        const psp = session.providers.privateStateProvider;
+        psp.setContractAddress(masterAddress);
+        const existing = (await psp.get(PRIVATE_STATE_ID) as any) ?? createInitialPrivateState();
+        await psp.set(PRIVATE_STATE_ID, {
+          ...existing,
+          attestationSignature: sig,
+          attestationCredType: credType,
+          attestationPollId: communityIdBytes,
+        });
+
+        setStatus('proving');
+        const result = await callCircuitOnMasterContract(session, 'claimCommunityCredential', [communityIdBytes]);
+        const resolvedHash = result.txHash ?? null;
+        setTxHash(resolvedHash);
+        setStatus('done');
+        return { txHash: resolvedHash };
+      } catch (e: any) {
+        console.error('Claim community credential failed:', e);
+        setError(e.message || String(e));
+        setStatus('error');
+        return null;
+      }
+    },
+    [session, address],
+  );
+
   return {
     castVote,
     castSimple,
@@ -489,6 +561,7 @@ export function useVoting() {
     castHierarchical,
     castCredentialedSimple,
     castCredentialedRanked,
+    claimCommunityCredential,
     status,
     txHash,
     error,

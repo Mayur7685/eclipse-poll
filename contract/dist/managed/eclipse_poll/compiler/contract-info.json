@@ -27,6 +27,25 @@
       }
     },
     {
+      "name": "claimCommunityCredential",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "communityId",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "registerCommunity",
       "pure": false,
       "proof": true,
@@ -664,6 +683,27 @@
           },
           "value": {
             "type-name": "Counter"
+          }
+        }
+      }
+    },
+    {
+      "name": "communityCredentials",
+      "index": 8,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
+        "type-name": "Set",
+        "type": {
+          "type-name": "Alias",
+          "name": "Nullifier",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
           }
         }
       }
