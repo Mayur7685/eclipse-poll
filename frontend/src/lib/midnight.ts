@@ -1,6 +1,7 @@
 import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
+import { dappConnectorProofProvider } from '@midnight-ntwrk/midnight-js-dapp-connector-proof-provider';
 import { ContractState } from '@midnight-ntwrk/compact-runtime';
 import type { MidnightProvider, WalletProvider } from '@midnight-ntwrk/midnight-js-types';
 
@@ -138,24 +139,11 @@ export async function createConnectedSession(
     window.fetch.bind(window),
   );
 
-  // Lazy proving provider — initialized on first proof request, not on connect.
-  // This makes wallet connection fast (~0.5s instead of ~10s).
-  let _provingProvider: any = null;
-  async function getProvingProvider() {
-    if (!_provingProvider) {
-      console.log('[midnight] Initializing proving provider (first vote)...');
-      _provingProvider = await api.getProvingProvider(zkConfigProvider);
-    }
-    return _provingProvider;
-  }
-
-  const proofProvider = {
-    async proveTx(unprovenTx: any) {
-      const pp = await getProvingProvider();
-      const { CostModel } = await import('@midnight-ntwrk/ledger-v8');
-      return unprovenTx.prove(pp, CostModel.initialCostModel());
-    },
-  };
+  // Use dappConnectorProofProvider — the correct way to use 1AM's in-wallet prover
+  // (same approach as Equilux). This handles both 1AM (in-wallet WASM prover) and
+  // Lace (needs external proof server). Lazy by design — keys only fetched when proving.
+  const { CostModel } = await import('@midnight-ntwrk/ledger-v8');
+  const proofProvider = await dappConnectorProofProvider(api, zkConfigProvider, CostModel.initialCostModel());
 
   const walletProvider: WalletProvider = {
     getCoinPublicKey: () => shieldedAddress.shieldedCoinPublicKey,
@@ -213,14 +201,25 @@ export async function enableWallet(wallet: any): Promise<any> {
   if (!wallet) {
     throw new Error('1AM Wallet extension not detected. Please install the 1AM Wallet extension.');
   }
+  // Use connect('preprod') — the correct Midnight DApp Connector API (as used by Equilux)
+  // This passes the network directly and avoids network mismatch issues
+  if (typeof wallet.connect === 'function') {
+    const api = await wallet.connect('preprod');
+    // Verify network matches
+    try {
+      const status = await api.getConnectionStatus?.();
+      if (status?.status === 'connected' && status?.networkId !== 'preprod') {
+        throw new Error(`Wallet is on "${status.networkId}" network. Please switch to Preprod in your 1AM Wallet settings.`);
+      }
+    } catch (e: any) {
+      // getConnectionStatus may not exist on older wallet versions — ignore
+      if (e.message?.includes('network')) throw e;
+    }
+    return api;
+  }
+  // Fallback for older wallet API
   if (typeof wallet.enable === 'function') {
     return await wallet.enable();
   }
-  if (typeof wallet.connect === 'function') {
-    return await wallet.connect();
-  }
-  if (typeof wallet.getConfiguration === 'function') {
-    return wallet;
-  }
-  throw new Error('1AM Wallet extension interface not recognized. Please ensure 1AM Wallet is enabled.');
+  throw new Error('1AM Wallet extension interface not recognized. Please ensure 1AM Wallet is up to date.');
 }
