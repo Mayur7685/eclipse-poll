@@ -10,6 +10,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { WalletProvider } from './contexts/WalletContext.tsx';
 import { CredentialProvider } from './contexts/CredentialContext.tsx';
+import WalletErrorBanner from './components/WalletErrorBanner.tsx';
 import App from './App.tsx';
 import { ToastProvider } from './components/Toast.tsx';
 import OnboardingTutorial from './components/OnboardingTutorial.tsx';
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <CredentialProvider>
         <ToastProvider>
           <App />
+          <WalletErrorBanner />
           <OnboardingTutorial />
         </ToastProvider>
         </CredentialProvider>
