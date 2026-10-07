@@ -358,7 +358,7 @@ export function useVoting() {
       const res = await fetch(`${VERIFIER}/verify/credential-params`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ communityId, evmAddress: address, connectedAccounts, pollIdHash: pollIdHex, userPubKeyHash: address }),
+        body: JSON.stringify({ communityId, evmAddress: address, connectedAccounts, pollIdHash: pollIdHex, userPubKeyHash: address, forVoting: true }),
       });
       const data = await res.json();
       if (!data.passed || !data.attestation) return null;

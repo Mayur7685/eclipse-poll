@@ -573,11 +573,11 @@ app.post(['/verify/check', '/api/verify/check'], async (req: Request, res: Respo
 
 // ── Verify requirements + issue Schnorr attestation ──────────────────────────
 // POST /verify/credential-params
-// Body: { communityId, evmAddress, connectedAccounts, pollIdHash, userPubKeyHash }
+// Body: { communityId, evmAddress, connectedAccounts, pollIdHash, userPubKeyHash, forVoting? }
+// forVoting=true: skip requirement check (user already claimed credential on-chain) — just issue Schnorr sig
 // Returns: { passed, results, attestation? }
-// attestation = { announcement: {x,y}, response, credType } — used as witness in ZK circuit
 app.post(['/verify/credential-params', '/api/verify/credential-params'], writeLimiter, async (req: Request, res: Response) => {
-  const { communityId, evmAddress, connectedAccounts = [], pollIdHash, userPubKeyHash } = req.body;
+  const { communityId, evmAddress, connectedAccounts = [], pollIdHash, userPubKeyHash, forVoting } = req.body;
   const community = communitiesStore.find((c) => c.community_id === communityId);
 
   if (!community) {
@@ -588,25 +588,33 @@ app.post(['/verify/credential-params', '/api/verify/credential-params'], writeLi
     return;
   }
 
-  const results = await checkRequirements(community, evmAddress ?? '', connectedAccounts);
+  // When forVoting=true the user already has an on-chain credential claim.
+  // Skip requirement re-check and just issue the Schnorr attestation.
+  let passed = false;
+  let results: any[] = [];
 
-  const groups = community?.requirement_groups ?? [];
-  let passed: boolean;
-  if (groups.length === 0) {
+  if (forVoting) {
     passed = true;
+    results = [{ requirementId: 'credential', passed: true, message: 'On-chain credential accepted' }];
   } else {
-    passed = groups.some((group: any) => {
-      const groupReqs = group.requirements ?? [];
-      if (groupReqs.length === 0) return true;
-      if (group.logic === 'OR') {
-        return groupReqs.some((req: any) =>
+    results = await checkRequirements(community, evmAddress ?? '', connectedAccounts);
+    const groups = community?.requirement_groups ?? [];
+    if (groups.length === 0) {
+      passed = true;
+    } else {
+      passed = groups.some((group: any) => {
+        const groupReqs = group.requirements ?? [];
+        if (groupReqs.length === 0) return true;
+        if (group.logic === 'OR') {
+          return groupReqs.some((req: any) =>
+            results.find((r: any) => r.requirementId === (req.id ?? req.type))?.passed
+          );
+        }
+        return groupReqs.every((req: any) =>
           results.find((r: any) => r.requirementId === (req.id ?? req.type))?.passed
         );
-      }
-      return groupReqs.every((req: any) =>
-        results.find((r: any) => r.requirementId === (req.id ?? req.type))?.passed
-      );
-    });
+      });
+    }
   }
 
   if (!passed) {
