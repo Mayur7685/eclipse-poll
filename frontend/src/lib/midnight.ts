@@ -137,12 +137,23 @@ export async function createConnectedSession(
     new URL(zkAssetBasePath, window.location.origin).toString(),
     window.fetch.bind(window),
   );
-  const provingProvider = await api.getProvingProvider(zkConfigProvider);
+
+  // Lazy proving provider — initialized on first proof request, not on connect.
+  // This makes wallet connection fast (~0.5s instead of ~10s).
+  let _provingProvider: any = null;
+  async function getProvingProvider() {
+    if (!_provingProvider) {
+      console.log('[midnight] Initializing proving provider (first vote)...');
+      _provingProvider = await api.getProvingProvider(zkConfigProvider);
+    }
+    return _provingProvider;
+  }
 
   const proofProvider = {
     async proveTx(unprovenTx: any) {
+      const pp = await getProvingProvider();
       const { CostModel } = await import('@midnight-ntwrk/ledger-v8');
-      return unprovenTx.prove(provingProvider, CostModel.initialCostModel());
+      return unprovenTx.prove(pp, CostModel.initialCostModel());
     },
   };
 
@@ -162,9 +173,6 @@ export async function createConnectedSession(
     submitTx: async (tx: any) => {
       const txHex = toHex(tx.serialize());
       await api.submitTransaction(txHex);
-      // 1AM wallet returns undefined. The real tx hash is resolved
-      // in callCircuitOnMasterContract after the circuit call completes
-      // (at which point watchForTxData has confirmed the tx is in a block).
       return 'pending';
     },
   };

@@ -100,6 +100,13 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setSession(sess);
       setAddress(sess.unshieldedAddress);
       localStorage.setItem(WALLET_CONNECTED_KEY, '1');
+      // Warm up the proving provider in the background — prover keys are
+      // fetched lazily on first vote. This prefetch makes first vote faster.
+      setTimeout(() => {
+        sess.providers.zkConfigProvider
+          .getZkConfig('castBinaryVote')
+          .catch(() => {}); // ignore errors — just warming cache
+      }, 2000);
       return sess;
     } catch (err: any) {
       console.error('Wallet connection failed:', err);
