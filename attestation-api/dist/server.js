@@ -74,6 +74,9 @@ app.use(generalLimiter);
 const PORT = process.env.PORT || 4000;
 const DATA_DIR = path.resolve(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'communities.json');
+// Pinata env — declared early so loadFromPinata() can use it
+const PINATA_JWT = process.env.PINATA_JWT;
+const PINATA_GATEWAY = process.env.VITE_PINATA_GATEWAY ?? 'https://gateway.pinata.cloud';
 const DEFAULT_COMMUNITIES = [];
 function loadStore() {
     try {
@@ -90,6 +93,52 @@ function loadStore() {
     return DEFAULT_COMMUNITIES;
 }
 const communitiesStore = loadStore();
+/** On startup: restore communities from Pinata if local file is empty (Render redeploy) */
+async function loadFromPinata() {
+    if (!PINATA_JWT)
+        return;
+    if (communitiesStore.length > 0)
+        return; // local file has data — skip
+    try {
+        console.log('[communities] Local store empty — restoring from Pinata...');
+        const res = await fetch('https://api.pinata.cloud/data/pinList?status=pinned&metadata[name]=eclipse-community-', { headers: { Authorization: `Bearer ${PINATA_JWT}` } });
+        if (!res.ok) {
+            console.warn('[communities] Pinata list failed:', res.status);
+            return;
+        }
+        const json = await res.json();
+        const pins = json.rows ?? [];
+        console.log(`[communities] Found ${pins.length} community pins on Pinata`);
+        const PINATA_GATEWAY_URL = process.env.VITE_PINATA_GATEWAY ?? 'https://gateway.pinata.cloud';
+        for (const pin of pins) {
+            try {
+                const gw = await fetch(`${PINATA_GATEWAY_URL}/ipfs/${pin.ipfs_pin_hash}`);
+                if (!gw.ok)
+                    continue;
+                const comm = await gw.json();
+                if (!comm?.community_id)
+                    continue;
+                const existing = communitiesStore.findIndex(c => c.community_id === comm.community_id);
+                if (existing >= 0)
+                    communitiesStore[existing] = comm;
+                else
+                    communitiesStore.push(comm);
+            }
+            catch (e) {
+                console.warn('[communities] Failed to fetch pin:', pin.ipfs_pin_hash, e.message);
+            }
+        }
+        if (communitiesStore.length > 0) {
+            persistStore();
+            console.log(`[communities] Restored ${communitiesStore.length} community/communities from Pinata`);
+        }
+    }
+    catch (e) {
+        console.warn('[communities] Pinata restore failed (non-fatal):', e.message);
+    }
+}
+// Kick off Pinata restore in background — doesn't block server startup
+void loadFromPinata();
 function persistStore() {
     try {
         if (!fs.existsSync(DATA_DIR))
@@ -597,8 +646,6 @@ app.post(['/verify/credential-params', '/api/verify/credential-params'], writeLi
     }
 });
 // --- Pinata IPFS Proxy ---
-const PINATA_JWT = process.env.PINATA_JWT;
-const PINATA_GATEWAY = process.env.VITE_PINATA_GATEWAY ?? 'https://gateway.pinata.cloud';
 async function pinToIPFS(data, name) {
     if (!PINATA_JWT) {
         // No JWT — fall back to fake CID (dev mode)
