@@ -15,6 +15,8 @@ services:
         sync: false   # https://eclipse-poll.vercel.app
       - key: ATTESTATION_SECRET_KEY
         sync: false
+      - key: MASTER_CONTRACT_ADDRESS
+        value: 9b22a2382cdd8e76f758c6bee6e2b6b2c85cbdc6aa9eed01dbc0342cddbacbcb
       - key: PINATA_JWT
         sync: false
       - key: SUPABASE_URL

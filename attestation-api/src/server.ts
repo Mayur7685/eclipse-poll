@@ -119,6 +119,11 @@ async function loadFromPinata(): Promise<void> {
     const json = await res.json() as { rows: { ipfs_pin_hash: string; metadata: { name: string } }[] };
     const pins = json.rows ?? [];
     console.log(`[communities] Found ${pins.length} community pins on Pinata`);
+
+    // Filter by current contract if MASTER_CONTRACT_ADDRESS is set
+    // — prevents loading communities from old deployments
+    const currentContract = process.env.MASTER_CONTRACT_ADDRESS?.toLowerCase();
+
     const PINATA_GATEWAY_URL = process.env.VITE_PINATA_GATEWAY ?? 'https://gateway.pinata.cloud';
     for (const pin of pins) {
       try {
@@ -126,6 +131,14 @@ async function loadFromPinata(): Promise<void> {
         if (!gw.ok) continue;
         const comm = await gw.json();
         if (!comm?.community_id) continue;
+
+        // Skip communities from other contract deployments
+        if (currentContract && comm.contract_address &&
+            comm.contract_address.toLowerCase() !== currentContract) {
+          console.log(`[communities] Skipping ${comm.name} — different contract (${comm.contract_address?.slice(0, 8)})`);
+          continue;
+        }
+
         const existing = communitiesStore.findIndex(c => c.community_id === comm.community_id);
         if (existing >= 0) communitiesStore[existing] = comm;
         else communitiesStore.push(comm);
