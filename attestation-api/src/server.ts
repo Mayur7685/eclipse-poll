@@ -105,6 +105,25 @@ function loadStore(): any[] {
 
 const communitiesStore: any[] = loadStore();
 
+// On startup: remove communities that belong to a different contract deployment
+;(function cleanStaleContractCommunities() {
+  const currentContract = process.env.MASTER_CONTRACT_ADDRESS?.toLowerCase();
+  if (!currentContract) return;
+  const before = communitiesStore.length;
+  for (let i = communitiesStore.length - 1; i >= 0; i--) {
+    const c = communitiesStore[i];
+    const addr = c.contract_address?.toLowerCase();
+    if (!addr || addr !== currentContract) {
+      console.log(`[communities] Removing stale community '${c.name}' (contract: ${addr ?? 'none'})`);
+      communitiesStore.splice(i, 1);
+    }
+  }
+  if (communitiesStore.length !== before) {
+    persistStore();
+    console.log(`[communities] Cleaned ${before - communitiesStore.length} stale community/communities`);
+  }
+})();
+
 /** On startup: restore communities from Pinata if local file is empty (Render redeploy) */
 async function loadFromPinata(): Promise<void> {
   if (!PINATA_JWT) return;
@@ -133,10 +152,14 @@ async function loadFromPinata(): Promise<void> {
         if (!comm?.community_id) continue;
 
         // Skip communities from other contract deployments
-        if (currentContract && comm.contract_address &&
-            comm.contract_address.toLowerCase() !== currentContract) {
-          console.log(`[communities] Skipping ${comm.name} — different contract (${comm.contract_address?.slice(0, 8)})`);
-          continue;
+        // If MASTER_CONTRACT_ADDRESS is set, REQUIRE a matching contract_address
+        // Communities without contract_address (old format) are also skipped
+        if (currentContract) {
+          const commContract = comm.contract_address?.toLowerCase();
+          if (!commContract || commContract !== currentContract) {
+            console.log(`[communities] Skipping ${comm.name || comm.community_id} — contract mismatch or missing (${commContract?.slice(0, 8) ?? 'none'})`);
+            continue;
+          }
         }
 
         const existing = communitiesStore.findIndex(c => c.community_id === comm.community_id);
