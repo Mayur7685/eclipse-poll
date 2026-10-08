@@ -9,7 +9,12 @@ import type { CommunityConfig, ConnectedAccount } from '../types'
 
 function StatusBadge({ status }: { status: 'claimed' | 'none' | 'claiming' }) {
   if (status === 'claimed')
-    return <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full"><svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Credential on-chain</span>
+    return (
+      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+        <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        On-chain
+      </span>
+    )
   if (status === 'claiming')
     return <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full animate-pulse">Claiming…</span>
   return <span className="text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">No credential</span>
@@ -148,9 +153,14 @@ export default function CredentialsHub() {
                 {/* Already claimed — show explorer link */}
                 {claimed && (
                   <div className="px-5 pb-4">
-                    <p className="text-xs text-emerald-600 font-medium">
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Your credential is stored on-chain. You can vote in all polls in this community without re-verifying.
-                    </p>
+                    <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
+                        <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <p className="text-xs text-emerald-700 leading-relaxed">
+                        Credential stored on-chain. You can vote in all polls in this community without re-verifying.
+                      </p>
+                    </div>
                   </div>
                 )}
 

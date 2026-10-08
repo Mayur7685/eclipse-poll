@@ -1,18 +1,13 @@
-import { useState, useEffect } from 'react';
-import { isEvmWalletAvailable, getEvmAddress, connectEvmWallet, onEvmAccountsChanged } from '../lib/evmWallet';
+import { useState } from 'react';
+import { isEvmWalletAvailable, connectEvmWallet, onEvmAccountsChanged } from '../lib/evmWallet';
 
 export function useEvmWallet() {
   const [evmAddress, setEvmAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isAvailable] = useState(() => isEvmWalletAvailable());
 
-  useEffect(() => {
-    // Only check for already-connected address — do NOT attach accountsChanged listener
-    // on mount because Phantom and MetaMask treat that as a connection request
-    // and show an approval popup even for eth_accounts.
-    // We attach the listener only after the user explicitly connects.
-    getEvmAddress().then(setEvmAddress);
-  }, []);
+  // Do NOT call eth_accounts on mount — Phantom shows an approval popup even
+  // for this passive call. Only connect when the user explicitly clicks Connect.
 
   const connect = async () => {
     setIsConnecting(true);
