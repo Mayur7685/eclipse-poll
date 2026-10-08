@@ -82,16 +82,17 @@ export default function Activity() {
                 <p className="text-xs text-gray-400">{label(item.type)} · {item.community.name}</p>
               </div>
               <span className="text-xs text-gray-300 shrink-0">
-                {currentBlock > 0 && item.block > 0
+                {item.poll.created_at
                   ? (() => {
-                      const diffBlocks = currentBlock - item.block
-                      const diffMins = Math.round(diffBlocks * 12 / 60)
+                      const diffMs = Date.now() - item.poll.created_at
+                      const diffMins = Math.floor(diffMs / 60_000)
+                      if (diffMins < 1)  return 'just now'
                       if (diffMins < 60) return `${diffMins}m ago`
-                      const diffHours = Math.round(diffMins / 60)
+                      const diffHours = Math.floor(diffMins / 60)
                       if (diffHours < 24) return `${diffHours}h ago`
-                      return `${Math.round(diffHours / 24)}d ago`
+                      return `${Math.floor(diffHours / 24)}d ago`
                     })()
-                  : `#${item.block}`}
+                  : item.block > 0 ? `#${item.block}` : ''}
               </span>
             </Link>
           ))}
