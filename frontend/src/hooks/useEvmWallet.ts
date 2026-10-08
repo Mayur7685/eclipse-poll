@@ -7,11 +7,11 @@ export function useEvmWallet() {
   const [isAvailable] = useState(() => isEvmWalletAvailable());
 
   useEffect(() => {
-    // Check if already connected
+    // Only check for already-connected address — do NOT attach accountsChanged listener
+    // on mount because Phantom and MetaMask treat that as a connection request
+    // and show an approval popup even for eth_accounts.
+    // We attach the listener only after the user explicitly connects.
     getEvmAddress().then(setEvmAddress);
-    // Listen for account changes
-    const cleanup = onEvmAccountsChanged(setEvmAddress);
-    return cleanup;
   }, []);
 
   const connect = async () => {
@@ -19,6 +19,10 @@ export function useEvmWallet() {
     try {
       const addr = await connectEvmWallet();
       setEvmAddress(addr);
+      // Attach listener only after explicit connect
+      if (addr) {
+        onEvmAccountsChanged((newAddr) => setEvmAddress(newAddr));
+      }
     } finally {
       setIsConnecting(false);
     }
