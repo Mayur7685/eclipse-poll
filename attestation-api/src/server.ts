@@ -170,9 +170,52 @@ async function loadFromPinata(): Promise<void> {
     if (communitiesStore.length > 0) {
       persistStore();
       console.log(`[communities] Restored ${communitiesStore.length} community/communities from Pinata`);
+
+      // Also restore polls for each community
+      await restorePollsFromPinata(PINATA_GATEWAY_URL, currentContract);
     }
   } catch (e: any) {
     console.warn('[communities] Pinata restore failed (non-fatal):', e.message);
+  }
+}
+
+/** Restore polls from Pinata into their communities */
+async function restorePollsFromPinata(gatewayUrl: string, currentContract?: string): Promise<void> {
+  if (!PINATA_JWT) return;
+  try {
+    const res = await fetch(
+      'https://api.pinata.cloud/data/pinList?status=pinned&metadata[name]=eclipse-poll-',
+      { headers: { Authorization: `Bearer ${PINATA_JWT}` } }
+    );
+    if (!res.ok) return;
+    const json = await res.json() as { rows: { ipfs_pin_hash: string }[] };
+    const pins = json.rows ?? [];
+    console.log(`[polls] Found ${pins.length} poll pins on Pinata`);
+    let restored = 0;
+    for (const pin of pins) {
+      try {
+        const gw = await fetch(`${gatewayUrl}/ipfs/${pin.ipfs_pin_hash}`);
+        if (!gw.ok) continue;
+        const poll = await gw.json();
+        if (!poll?.poll_id || !poll?.community_id) continue;
+        // Skip polls from other contracts
+        if (currentContract && poll.contract_address &&
+            poll.contract_address.toLowerCase() !== currentContract) continue;
+        const comm = communitiesStore.find(c => c.community_id === poll.community_id);
+        if (!comm) continue;
+        if (!comm.polls) comm.polls = [];
+        const existingPoll = comm.polls.findIndex((p: any) => p.poll_id === poll.poll_id);
+        if (existingPoll >= 0) comm.polls[existingPoll] = poll;
+        else comm.polls.push(poll);
+        restored++;
+      } catch { /* skip bad pin */ }
+    }
+    if (restored > 0) {
+      persistStore();
+      console.log(`[polls] Restored ${restored} poll(s) from Pinata`);
+    }
+  } catch (e: any) {
+    console.warn('[polls] Pinata poll restore failed (non-fatal):', e.message);
   }
 }
 
