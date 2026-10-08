@@ -310,15 +310,15 @@ export default function CredentialHub({ community }: Props) {
 
         {/* Credential active message */}
         {hasCred && (
-          <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
-            <svg className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-            <div>
-              <p className="text-sm font-medium text-emerald-800">Credential active</p>
-              <p className="text-xs text-emerald-700 mt-0.5">
-                You are eligible to vote in all polls in this community.
-              </p>
+          <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+            <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+              <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-semibold text-emerald-800">Credential active</span>
+              <span className="text-xs text-emerald-600 ml-2">Eligible to vote in this community</span>
             </div>
           </div>
         )}
