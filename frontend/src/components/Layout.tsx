@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import WalletButton from './WalletButton';
-import { useTheme } from '../contexts/ThemeContext';
 
 const NAV = [
   { to: '/polls',       label: 'Polls' },
@@ -13,7 +12,6 @@ const NAV = [
 ];
 
 export default function Layout() {
-  const { toggle, isDark } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -71,17 +69,6 @@ export default function Layout() {
             </svg>
           </button>
 
-          {/* Wallet button */}
-          <button
-            onClick={toggle}
-            aria-label="Toggle dark mode"
-            className="w-9 h-9 rounded-full flex items-center justify-center border border-gray-200 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors"
-          >
-            {isDark
-              ? <svg className="w-4 h-4 text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-              : <svg className="w-4 h-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-            }
-          </button>
                     <WalletButton />
 
           {/* Hamburger — mobile */}
