@@ -11,10 +11,12 @@ interface Props {
   pollType?: string
   pollTitle?: string
   selectedOption?: number | null
+  approvedIndices?: number[]
 }
 
-export default function VoteConfirmModal({ ranking, options, onConfirm, onCancel, submitting, pollType, pollTitle, selectedOption }: Props) {
-  const isSimple = pollType === 'simple'
+export default function VoteConfirmModal({ ranking, options, onConfirm, onCancel, submitting, pollType, pollTitle, selectedOption, approvedIndices }: Props) {
+  const isSimple   = pollType === 'simple'
+  const isApproval = pollType === 'approval'
 
   const sorted = Object.entries(ranking)
     .filter(([, r]) => r > 0)
@@ -25,6 +27,14 @@ export default function VoteConfirmModal({ ranking, options, onConfirm, onCancel
     }))
 
   const unranked = options.filter(o => !ranking[o.option_id] || ranking[o.option_id] === 0)
+
+  // Approved labels for approval polls
+  const approvedLabels = isApproval && approvedIndices
+    ? approvedIndices.map(idx => options[idx]?.label ?? `Option ${idx + 1}`)
+    : []
+  const unapprovedLabels = isApproval && approvedIndices
+    ? options.filter((_, idx) => !approvedIndices.includes(idx)).map(o => o.label)
+    : []
 
   const ts = new Date().toLocaleString('en-US', {
     year: 'numeric', month: 'short', day: 'numeric',
@@ -70,20 +80,40 @@ export default function VoteConfirmModal({ ranking, options, onConfirm, onCancel
                 </div>
               </div>
 
-              <span className="text-sm font-medium text-white">{isSimple ? 'Your Choice:' : 'Ranked:'}</span>
+              <span className="text-sm font-medium text-white">
+                {isSimple ? 'Your Choice:' : isApproval ? 'Approved:' : 'Ranked:'}
+              </span>
               {isSimple ? (
                 <span className="text-sm text-gray-300">
                   {selectedOption !== null && selectedOption !== undefined
                     ? options[selectedOption]?.label ?? `Option ${selectedOption + 1}`
                     : 'No option selected'}
                 </span>
+              ) : isApproval ? (
+                approvedLabels.length > 0 ? approvedLabels.map((label, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-gray-300">
+                    <svg className="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    {label}
+                  </div>
+                )) : (
+                  <span className="text-sm text-gray-500 italic">No options approved</span>
+                )
               ) : sorted.length > 0 ? sorted.map(({ rank, label }) => (
                 <span key={rank} className="text-sm text-gray-400">{rank}: {label}</span>
               )) : (
                 <span className="text-sm text-gray-500 italic">No options ranked</span>
               )}
 
-              {!isSimple && unranked.length > 0 && (
+              {isApproval && unapprovedLabels.length > 0 && (
+                <>
+                  <span className="text-sm font-medium text-white mt-3">Not approved:</span>
+                  {unapprovedLabels.map((label, i) => (
+                    <span key={i} className="text-sm text-gray-600">{label}</span>
+                  ))}
+                </>
+              )}
+
+              {!isSimple && !isApproval && unranked.length > 0 && (
                 <>
                   <span className="text-sm font-medium text-white mt-3">Unranked:</span>
                   {unranked.map(o => (
@@ -122,6 +152,8 @@ export default function VoteConfirmModal({ ranking, options, onConfirm, onCancel
         <div className="bg-[#0070F3] text-white px-5 py-4 text-sm font-medium rounded-b-xl leading-relaxed shadow-xl -mt-2 border-t border-blue-400/30">
           {isSimple
             ? 'By clicking "Confirm" you\'re cryptographically signing your choice. Your selection is ZK-private and cannot be revealed individually.'
+            : isApproval
+            ? 'By clicking "Confirm" you\'re approving selected options with a ZK ballot. Each approved option gets +1 vote.'
             : 'By clicking "Confirm" you\'re cryptographically signing your rank order, creating a verifiable ballot that cannot be falsified.'}
         </div>
       </div>

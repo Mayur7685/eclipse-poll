@@ -705,6 +705,7 @@ export default function PollDetail() {
           pollType={poll.poll_type}
           pollTitle={poll.title}
           selectedOption={selectedOption}
+          approvedIndices={poll.poll_type === 'approval' ? Array.from(approvedOptions) : undefined}
           submitting={status === 'signing'}
           onConfirm={() => void handleConfirmVote()}
           onCancel={() => setShowConfirm(false)}
