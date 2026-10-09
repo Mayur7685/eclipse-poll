@@ -1,4 +1,4 @@
-import { ecMulGenerator, jubjubPointX, jubjubPointY } from '@midnight-ntwrk/compact-runtime';
+import { constructJubjubPoint, jubjubPointX, jubjubPointY } from '@midnight-ntwrk/compact-runtime';
 
 export type EclipsePollPrivateState = {
   userSecretKey:    Uint8Array;
@@ -8,8 +8,11 @@ export type EclipsePollPrivateState = {
   layerWeights:     bigint[][];
   layerParents:     bigint[];
   // Attestation for credentialed VOTES (castCredentialedBinaryVote etc.)
-  // Uses nonce-based approach: store k, reconstruct R = k*G via ecMulGenerator
-  attestationNonce:    bigint | null;
+  // Store announcement coordinates from the API; use constructJubjubPoint(x,y)
+  // which returns the proper JubjubPoint the compact-runtime circuit expects.
+  attestationAnnouncementX: bigint;
+  attestationAnnouncementY: bigint;
+  attestationNonce:    bigint | null;   // kept for backward compat
   attestationResponse: bigint;
   attestationCredType: bigint;
   attestationPollId:   Uint8Array;
@@ -39,21 +42,20 @@ export const witnesses = {
     [ctx.privateState, ctx.privateState.layerParents],
 
   getAttestation: (ctx: { privateState: EclipsePollPrivateState }) => {
-    const nonce = ctx.privateState.attestationNonce;
+    const x = ctx.privateState.attestationAnnouncementX ?? 0n;
+    const y = ctx.privateState.attestationAnnouncementY ?? 0n;
 
-    // ecMulGenerator(k) gives the valid Opaque<"JubjubPoint"> announcement R = k*G
-    // This is the only way to construct a JubjubPoint the ZK prover accepts
-    const announcement = ecMulGenerator(nonce ?? 1n);
+    // constructJubjubPoint(x, y) returns the proper JubjubPoint that the
+    // compact-runtime circuit validator accepts at execution time.
+    // ecMulGenerator() returns an opaque WASM handle that works inside
+    // circuit execution but NOT when passed in from TypeScript witnesses.
+    const announcement = constructJubjubPoint(x, y);
     const response     = ctx.privateState.attestationResponse ?? 0n;
 
-    // Verify we can round-trip the point (sanity check, remove in prod)
-    const ax = jubjubPointX(announcement);
-    const ay = jubjubPointY(announcement);
-    console.log('[getAttestation] R.x slice:', ax.toString().slice(0, 10), 'nonce:', nonce?.toString().slice(0, 8));
+    console.log('[getAttestation] ann.x:', jubjubPointX(announcement).toString().slice(0, 10));
 
-    const sig = { announcement, response };
     return [ctx.privateState, [
-      sig,
+      { announcement, response },
       ctx.privateState.attestationCredType,
       ctx.privateState.attestationPollId,
     ]];

@@ -351,7 +351,7 @@ export function useVoting() {
     pollIdBytes: Uint8Array,
     address: string,
     connectedAccounts: any[] = [],
-  ): Promise<{ nonce: bigint; response: bigint; credType: bigint } | null> {
+  ): Promise<{ nonce: bigint; response: bigint; credType: bigint; announcementX: bigint; announcementY: bigint } | null> {
     const VERIFIER = import.meta.env.VITE_VERIFIER_URL ?? 'http://localhost:4000';
     const pollIdHex = '0x' + Buffer.from(pollIdBytes).toString('hex');
     try {
@@ -367,6 +367,8 @@ export function useVoting() {
         nonce:    BigInt(attestation.nonce),
         response: BigInt(attestation.response),
         credType: BigInt(attestation.credType ?? 1),
+        announcementX: BigInt(attestation.announcement?.x ?? 0),
+        announcementY: BigInt(attestation.announcement?.y ?? 0),
       };
     } catch {
       return null;
@@ -404,6 +406,8 @@ export function useVoting() {
           attestationResponse: attestResult.response,
           attestationCredType: attestResult.credType,
           attestationPollId: pollIdBytes,
+          attestationAnnouncementX: attestResult.announcementX,
+          attestationAnnouncementY: attestResult.announcementY,
         });
 
         setStatus('proving');
@@ -462,6 +466,8 @@ export function useVoting() {
           attestationResponse: attestResult.response,
           attestationCredType: attestResult.credType,
           attestationPollId: pollIdBytes,
+          attestationAnnouncementX: attestResult.announcementX,
+          attestationAnnouncementY: attestResult.announcementY,
         });
 
         setStatus('proving');

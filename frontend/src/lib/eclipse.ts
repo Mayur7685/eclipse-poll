@@ -87,6 +87,8 @@ export function createInitialPrivateState(userSecretKey?: Uint8Array): EclipsePo
     layerParents: [0n, 0n, 0n, 0n],
     attestationSignature: null,
     attestationNonce: null,
+    attestationAnnouncementX: 0n,
+    attestationAnnouncementY: 0n,
     attestationResponse: 0n,
     attestationCredType: 0n,
     attestationPollId: new Uint8Array(32),
