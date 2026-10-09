@@ -220,6 +220,8 @@ export function useVoting() {
       _contractAddress: string,
       pollIdBytes: Uint8Array,
       approvedIndices: number[],  // indices of approved options (0-based)
+      communityId?: string,        // if provided → use credentialed circuit
+      connectedAccounts: any[] = [],
     ) => {
       if (!session || !address) { setError('Wallet not connected'); return; }
       setStatus('proving');
@@ -235,16 +237,36 @@ export function useVoting() {
           voteChoice: 0n,
           rankedWeights: [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
         };
+
         // Build boolean approval vector
         const approvalChoices = Array(8).fill(false);
         approvedIndices.forEach(idx => { if (idx >= 0 && idx < 8) approvalChoices[idx] = true; });
-        await psp.set(PRIVATE_STATE_ID, { ...existing, approvalChoices });
 
-        const result = await callCircuitOnMasterContract(
-          session,
-          'castApprovalVote',
-          [pollIdBytes],
-        );
+        let circuitName = 'castApprovalVote';
+
+        if (communityId) {
+          // Gated poll — get Schnorr attestation and use credentialed circuit
+          setStatus('attesting');
+          const attestResult = await getAttestationFromAPI(communityId, pollIdBytes, address, connectedAccounts);
+          if (!attestResult) { setError('Credential verification failed. Check your eligibility.'); setStatus('error'); return; }
+          await psp.set(PRIVATE_STATE_ID, {
+            ...existing,
+            approvalChoices,
+            attestationSignature: null,
+            attestationNonce: attestResult.nonce,
+            attestationResponse: attestResult.response,
+            attestationCredType: attestResult.credType,
+            attestationPollId: pollIdBytes,
+            attestationAnnouncementX: attestResult.announcementX,
+            attestationAnnouncementY: attestResult.announcementY,
+          });
+          circuitName = 'castCredentialedApprovalVote';
+          setStatus('proving');
+        } else {
+          await psp.set(PRIVATE_STATE_ID, { ...existing, approvalChoices });
+        }
+
+        const result = await callCircuitOnMasterContract(session, circuitName, [pollIdBytes]);
 
         const resolvedHash = result.txHash ?? null;
         const pollIdHex = Buffer.from(pollIdBytes).toString('hex');

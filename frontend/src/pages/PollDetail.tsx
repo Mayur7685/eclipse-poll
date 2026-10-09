@@ -280,7 +280,7 @@ export default function PollDetail() {
         await castVote('', pollIdBytes, ranking, poll!.options.length)
       }
     } else if (type === 'approval') {
-      await castApproval('', pollIdBytes, Array.from(approvedOptions))
+      await castApproval('', pollIdBytes, Array.from(approvedOptions), isCredentialed ? commId : undefined)
     }
   }
 

@@ -360,6 +360,40 @@ export circuit castCredentialedRankedVote(pollId: PollId): [] {
   }
 }
 
+export circuit castCredentialedApprovalVote(pollId: PollId): [] {
+  const pid = disclose(pollId);
+  assert(polls.member(pid), "Poll not found");
+  const config = polls.lookup(pid);
+  assert(!config.isClosed, "Poll closed");
+  assert(config.pollType == PollType.APPROVAL, "Not an approval poll");
+  assert(config.credType != CredentialType.FREE, "Use castApprovalVote for free polls");
+
+  const sk = getUserSecret();
+  const nul = computeNullifier(sk, pollId);
+  assert(!nullifiers.member(disclose(nul)), "Already voted");
+  nullifiers.insert(disclose(nul));
+
+  const [ann_x, ann_y, response, credType, attPollId] = getAttestation();
+  const sig: Schnorr_SchnorrSignature = Schnorr_SchnorrSignature {
+    announcement: constructJubjubPoint(ann_x, ann_y),
+    response: response
+  };
+  const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
+  const msg: Vector<3, Field> = [
+    disclose(credType) as Field,
+    transientHash<PollId>(pollId),
+    userPkHash
+  ];
+  Schnorr_schnorrVerify<3>(msg, sig, attestationPk);
+
+  const choices = getApprovalChoices();
+  for (const i of 0..8) {
+    if ((i as Uint<8>) < config.optionCount && disclose(choices[i])) {
+      tallies.lookup(pid).lookup(disclose(i as Uint<8>)).increment(1);
+    }
+  }
+}
+
 export circuit closePoll(pollId: PollId): [] {
   const pid = disclose(pollId);
   assert(polls.member(pid), "Poll not found");
