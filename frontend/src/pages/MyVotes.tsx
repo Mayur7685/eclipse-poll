@@ -12,13 +12,14 @@ import type { CommunityConfig } from '../types'
 import type { VoteCastEvent } from '../hooks/useVoteHistory'
 
 interface StoredSubmission {
-  pollId:          string
-  poll_type?:      string
-  ranking:         Record<string, number>
-  selectedOption?: number | null
-  options:         { id: string | number; label: string }[]
-  surveyAnswers?:  Record<string, number>
-  votedAt:         number
+  pollId:           string
+  poll_type?:       string
+  ranking:          Record<string, number>
+  selectedOption?:  number | null
+  approvedIndices?: number[]
+  options:          { id: string | number; label: string }[]
+  surveyAnswers?:   Record<string, number>
+  votedAt:          number
 }
 
 interface EnrichedVote {
@@ -45,7 +46,21 @@ function VoteCard({ vote }: { vote: EnrichedVote }) {
 
   // Resolve poll type — prefer submission, fall back to event (from server decryption)
   const pollType = submission?.poll_type ?? event.poll_type
-  const isRanked = pollType === 'ranked' || pollType === 'flat' || pollType === 'hierarchical'
+  const isRanked   = pollType === 'ranked' || pollType === 'flat' || pollType === 'hierarchical'
+  const isApproval = pollType === 'approval'
+
+  // Resolve approved option labels for approval polls
+  let approvedLabels: string[] | null = null
+  const approvedIndices = submission?.approvedIndices ?? (event as any).approvedIndices
+  if (isApproval && approvedIndices && approvedIndices.length > 0) {
+    const communityPoll = community?.polls?.find(p => p.poll_id.replace(/^0x/,'') === event.pollId.replace(/^0x/,''))
+    const pollOpts = communityPoll?.options ?? submission?.options ?? []
+    approvedLabels = approvedIndices.map((idx: number) => {
+      const opt = pollOpts[idx]
+      if (!opt) return `Option ${idx + 1}`
+      return typeof opt === 'string' ? opt : (opt as any).label ?? `Option ${idx + 1}`
+    })
+  }
 
   // Resolve chosen option label for simple polls
   let choiceLabel: string | null = null
@@ -123,6 +138,20 @@ function VoteCard({ vote }: { vote: EnrichedVote }) {
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               {choiceLabel}
             </span>
+          </div>
+        ) : approvedLabels && approvedLabels.length > 0 ? (
+          <div>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Approved Options</p>
+            <div className="flex flex-wrap gap-1.5">
+              {approvedLabels.map((label, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-100">
+                  <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  {label}
+                </span>
+              ))}
+            </div>
           </div>
         ) : rankedLabels && rankedLabels.length > 0 ? (
           <div>

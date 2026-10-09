@@ -190,7 +190,10 @@ export default function PollDetail() {
           ? Object.fromEntries(
               Array.from(layerRankings.values()).flatMap(r => Object.entries(r))
             )
-          : ranking,
+          : poll.poll_type === 'approval'
+            ? {}
+            : ranking,
+      approvedIndices: poll.poll_type === 'approval' ? Array.from(approvedOptions) : undefined,
       selectedOption: poll.poll_type === 'simple' ? selectedOption : undefined,
       options: poll.options.map(o => ({ id: o.option_id, label: o.label, parentId: o.parent_option_id })),
       votedAt,
