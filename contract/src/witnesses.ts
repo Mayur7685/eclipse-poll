@@ -1,4 +1,4 @@
-import { constructJubjubPoint, jubjubPointX, jubjubPointY } from '@midnight-ntwrk/compact-runtime';
+// No compact-runtime imports needed — getAttestation returns plain bigint Fields
 
 export type EclipsePollPrivateState = {
   userSecretKey:    Uint8Array;
@@ -42,20 +42,20 @@ export const witnesses = {
     [ctx.privateState, ctx.privateState.layerParents],
 
   getAttestation: (ctx: { privateState: EclipsePollPrivateState }) => {
-    const x = ctx.privateState.attestationAnnouncementX ?? 0n;
-    const y = ctx.privateState.attestationAnnouncementY ?? 0n;
+    const x        = ctx.privateState.attestationAnnouncementX ?? 0n;
+    const y        = ctx.privateState.attestationAnnouncementY ?? 0n;
+    const response = ctx.privateState.attestationResponse ?? 0n;
 
-    // constructJubjubPoint(x, y) returns the proper JubjubPoint that the
-    // compact-runtime circuit validator accepts at execution time.
-    // ecMulGenerator() returns an opaque WASM handle that works inside
-    // circuit execution but NOT when passed in from TypeScript witnesses.
-    const announcement = constructJubjubPoint(x, y);
-    const response     = ctx.privateState.attestationResponse ?? 0n;
-
-    console.log('[getAttestation] ann.x:', jubjubPointX(announcement).toString().slice(0, 10));
+    // Return ann_x, ann_y, response as plain bigint Fields — the circuit
+    // reconstructs the JubjubPoint using constructJubjubPoint(ann_x, ann_y).
+    // This avoids ever passing an opaque JubjubPoint from TS witnesses,
+    // which fails during ZK proof generation.
+    console.log('[getAttestation] ann_x slice:', x.toString().slice(0, 10));
 
     return [ctx.privateState, [
-      { announcement, response },
+      x,
+      y,
+      response,
       ctx.privateState.attestationCredType,
       ctx.privateState.attestationPollId,
     ]];

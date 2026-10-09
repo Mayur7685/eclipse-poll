@@ -74,7 +74,10 @@ witness getApprovalChoices(): Vector<8, Boolean>;
 witness getLayerWeights(): Vector<4, Vector<8, Uint<8>>>;
 witness getLayerParents(): Vector<4, Uint<8>>;
 // Attestation: Schnorr signature + credential metadata
-witness getAttestation(): [Schnorr_SchnorrSignature, CredentialType, PollId];
+// Returns announcement x, announcement y, response as plain Fields to avoid
+// passing opaque JubjubPoint from TypeScript witnesses (not serializable).
+// The circuit reconstructs the SchnorrSignature using constructJubjubPoint.
+witness getAttestation(): [Field, Field, Field, CredentialType, PollId];
 
 // --- Pure Helper Circuits ---
 pure circuit deriveUserPublicKey(sk: UserSecretKey, secretPin: Uint<16>): UserPublicKey {
@@ -303,7 +306,11 @@ export circuit castCredentialedBinaryVote(pollId: PollId): [] {
   nullifiers.insert(disclose(nul));
 
   // Verify Schnorr attestation signature
-  const [sig, credType, attPollId] = getAttestation();
+  const [ann_x, ann_y, response, credType, attPollId] = getAttestation();
+  const sig: Schnorr_SchnorrSignature = Schnorr_SchnorrSignature {
+    announcement: constructJubjubPoint(ann_x, ann_y),
+    response: response
+  };
   const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
   const msg: Vector<3, Field> = [
     disclose(credType) as Field,
@@ -330,7 +337,11 @@ export circuit castCredentialedRankedVote(pollId: PollId): [] {
   assert(!nullifiers.member(disclose(nul)), "Already voted");
   nullifiers.insert(disclose(nul));
 
-  const [sig, credType, attPollId] = getAttestation();
+  const [ann_x, ann_y, response, credType, attPollId] = getAttestation();
+  const sig: Schnorr_SchnorrSignature = Schnorr_SchnorrSignature {
+    announcement: constructJubjubPoint(ann_x, ann_y),
+    response: response
+  };
   const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
   const msg: Vector<3, Field> = [
     disclose(credType) as Field,
