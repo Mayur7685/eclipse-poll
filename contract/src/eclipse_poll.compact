@@ -311,11 +311,12 @@ export circuit castCredentialedBinaryVote(pollId: PollId): [] {
     announcement: constructJubjubPoint(ann_x, ann_y),
     response: response
   };
-  const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
+  // msg binds: credType + pollId + 0 (user identity enforced via nullifier)
+  // The server signs [credType, transientHash(pollId), 0] — user's SK is private
   const msg: Vector<3, Field> = [
     disclose(credType) as Field,
     transientHash<PollId>(pollId),
-    userPkHash
+    0 as Field
   ];
   Schnorr_schnorrVerify<3>(msg, sig, attestationPk);
 
@@ -342,11 +343,11 @@ export circuit castCredentialedRankedVote(pollId: PollId): [] {
     announcement: constructJubjubPoint(ann_x, ann_y),
     response: response
   };
-  const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
+  
   const msg: Vector<3, Field> = [
     disclose(credType) as Field,
     transientHash<PollId>(pollId),
-    userPkHash
+    0 as Field
   ];
   Schnorr_schnorrVerify<3>(msg, sig, attestationPk);
 
@@ -378,11 +379,11 @@ export circuit castCredentialedApprovalVote(pollId: PollId): [] {
     announcement: constructJubjubPoint(ann_x, ann_y),
     response: response
   };
-  const userPkHash = transientHash<UserPublicKey>(deriveUserPublicKey(sk, 0 as Uint<16>));
+  
   const msg: Vector<3, Field> = [
     disclose(credType) as Field,
     transientHash<PollId>(pollId),
-    userPkHash
+    0 as Field
   ];
   Schnorr_schnorrVerify<3>(msg, sig, attestationPk);
 

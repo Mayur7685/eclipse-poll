@@ -71,97 +71,97 @@ class _CommunityOnChainConfig_0 {
 
 const _descriptor_9 = new _CommunityOnChainConfig_0();
 
-const _descriptor_10 = __compactRuntime.CompactTypeField;
+const _descriptor_10 = new __compactRuntime.CompactTypeVector(4, _descriptor_3);
+
+const _descriptor_11 = __compactRuntime.CompactTypeField;
 
 class _tuple_0 {
   alignment() {
-    return _descriptor_10.alignment().concat(_descriptor_10.alignment().concat(_descriptor_10.alignment().concat(_descriptor_2.alignment().concat(_descriptor_0.alignment()))));
+    return _descriptor_11.alignment().concat(_descriptor_11.alignment().concat(_descriptor_11.alignment().concat(_descriptor_2.alignment().concat(_descriptor_0.alignment()))));
   }
   fromValue(value_0) {
     return [
-      _descriptor_10.fromValue(value_0),
-      _descriptor_10.fromValue(value_0),
-      _descriptor_10.fromValue(value_0),
+      _descriptor_11.fromValue(value_0),
+      _descriptor_11.fromValue(value_0),
+      _descriptor_11.fromValue(value_0),
       _descriptor_2.fromValue(value_0),
       _descriptor_0.fromValue(value_0)
     ]
   }
   toValue(value_0) {
-    return _descriptor_10.toValue(value_0[0]).concat(_descriptor_10.toValue(value_0[1]).concat(_descriptor_10.toValue(value_0[2]).concat(_descriptor_2.toValue(value_0[3]).concat(_descriptor_0.toValue(value_0[4])))));
+    return _descriptor_11.toValue(value_0[0]).concat(_descriptor_11.toValue(value_0[1]).concat(_descriptor_11.toValue(value_0[2]).concat(_descriptor_2.toValue(value_0[3]).concat(_descriptor_0.toValue(value_0[4])))));
   }
 }
 
-const _descriptor_11 = new _tuple_0();
+const _descriptor_12 = new _tuple_0();
 
-const _descriptor_12 = new __compactRuntime.CompactTypeVector(8, _descriptor_3);
+const _descriptor_13 = new __compactRuntime.CompactTypeVector(8, _descriptor_5);
 
-const _descriptor_13 = new __compactRuntime.CompactTypeVector(4, _descriptor_12);
+const _descriptor_14 = new __compactRuntime.CompactTypeVector(8, _descriptor_3);
 
-const _descriptor_14 = new __compactRuntime.CompactTypeVector(4, _descriptor_3);
+const _descriptor_15 = new __compactRuntime.CompactTypeVector(4, _descriptor_14);
 
-const _descriptor_15 = new __compactRuntime.CompactTypeVector(8, _descriptor_5);
-
-const _descriptor_16 = new __compactRuntime.CompactTypeUnsignedInteger(452312848583266388373324160190187140051835877600158453279131187530910662655n, 31);
-
-class _tuple_1 {
-  alignment() {
-    return _descriptor_10.alignment().concat(_descriptor_16.alignment());
-  }
-  fromValue(value_0) {
-    return [
-      _descriptor_10.fromValue(value_0),
-      _descriptor_16.fromValue(value_0)
-    ]
-  }
-  toValue(value_0) {
-    return _descriptor_10.toValue(value_0[0]).concat(_descriptor_16.toValue(value_0[1]));
-  }
-}
-
-const _descriptor_17 = new _tuple_1();
-
-const _descriptor_18 = new __compactRuntime.CompactTypeVector(3, _descriptor_10);
+const _descriptor_16 = new __compactRuntime.CompactTypeVector(3, _descriptor_11);
 
 class _SchnorrSignature_0 {
   alignment() {
-    return _descriptor_7.alignment().concat(_descriptor_10.alignment());
+    return _descriptor_7.alignment().concat(_descriptor_11.alignment());
   }
   fromValue(value_0) {
     return {
       announcement: _descriptor_7.fromValue(value_0),
-      response: _descriptor_10.fromValue(value_0)
+      response: _descriptor_11.fromValue(value_0)
     }
   }
   toValue(value_0) {
-    return _descriptor_7.toValue(value_0.announcement).concat(_descriptor_10.toValue(value_0.response));
+    return _descriptor_7.toValue(value_0.announcement).concat(_descriptor_11.toValue(value_0.response));
   }
 }
 
-const _descriptor_19 = new _SchnorrSignature_0();
+const _descriptor_17 = new _SchnorrSignature_0();
 
-const _descriptor_20 = new __compactRuntime.CompactTypeVector(3, _descriptor_0);
+const _descriptor_18 = new __compactRuntime.CompactTypeUnsignedInteger(452312848583266388373324160190187140051835877600158453279131187530910662655n, 31);
+
+class _tuple_1 {
+  alignment() {
+    return _descriptor_11.alignment().concat(_descriptor_18.alignment());
+  }
+  fromValue(value_0) {
+    return [
+      _descriptor_11.fromValue(value_0),
+      _descriptor_18.fromValue(value_0)
+    ]
+  }
+  toValue(value_0) {
+    return _descriptor_11.toValue(value_0[0]).concat(_descriptor_18.toValue(value_0[1]));
+  }
+}
+
+const _descriptor_19 = new _tuple_1();
+
+const _descriptor_20 = new __compactRuntime.CompactTypeVector(2, _descriptor_0);
+
+const _descriptor_21 = new __compactRuntime.CompactTypeVector(3, _descriptor_0);
 
 class _SchnorrHashInput_0 {
   alignment() {
-    return _descriptor_10.alignment().concat(_descriptor_10.alignment().concat(_descriptor_10.alignment().concat(_descriptor_10.alignment().concat(_descriptor_18.alignment()))));
+    return _descriptor_11.alignment().concat(_descriptor_11.alignment().concat(_descriptor_11.alignment().concat(_descriptor_11.alignment().concat(_descriptor_16.alignment()))));
   }
   fromValue(value_0) {
     return {
-      ann_x: _descriptor_10.fromValue(value_0),
-      ann_y: _descriptor_10.fromValue(value_0),
-      pk_x: _descriptor_10.fromValue(value_0),
-      pk_y: _descriptor_10.fromValue(value_0),
-      msg: _descriptor_18.fromValue(value_0)
+      ann_x: _descriptor_11.fromValue(value_0),
+      ann_y: _descriptor_11.fromValue(value_0),
+      pk_x: _descriptor_11.fromValue(value_0),
+      pk_y: _descriptor_11.fromValue(value_0),
+      msg: _descriptor_16.fromValue(value_0)
     }
   }
   toValue(value_0) {
-    return _descriptor_10.toValue(value_0.ann_x).concat(_descriptor_10.toValue(value_0.ann_y).concat(_descriptor_10.toValue(value_0.pk_x).concat(_descriptor_10.toValue(value_0.pk_y).concat(_descriptor_18.toValue(value_0.msg)))));
+    return _descriptor_11.toValue(value_0.ann_x).concat(_descriptor_11.toValue(value_0.ann_y).concat(_descriptor_11.toValue(value_0.pk_x).concat(_descriptor_11.toValue(value_0.pk_y).concat(_descriptor_16.toValue(value_0.msg)))));
   }
 }
 
-const _descriptor_21 = new _SchnorrHashInput_0();
-
-const _descriptor_22 = new __compactRuntime.CompactTypeVector(2, _descriptor_0);
+const _descriptor_22 = new _SchnorrHashInput_0();
 
 class _Either_0 {
   alignment() {
@@ -615,14 +615,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('castCredentialedRankedVote',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 327 char 1',
+                                     'eclipse_poll.compact line 328 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
           __compactRuntime.typeError('castCredentialedRankedVote',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 327 char 1',
+                                     'eclipse_poll.compact line 328 char 1',
                                      'Bytes<32>',
                                      pollId_0)
         }
@@ -651,14 +651,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('castCredentialedApprovalVote',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 363 char 1',
+                                     'eclipse_poll.compact line 364 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
           __compactRuntime.typeError('castCredentialedApprovalVote',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 363 char 1',
+                                     'eclipse_poll.compact line 364 char 1',
                                      'Bytes<32>',
                                      pollId_0)
         }
@@ -687,14 +687,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('closePoll',
                                      'argument 1 (as invoked from Typescript)',
-                                     'eclipse_poll.compact line 397 char 1',
+                                     'eclipse_poll.compact line 398 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(pollId_0.buffer instanceof ArrayBuffer && pollId_0.BYTES_PER_ELEMENT === 1 && pollId_0.length === 32)) {
           __compactRuntime.typeError('closePoll',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'eclipse_poll.compact line 397 char 1',
+                                     'eclipse_poll.compact line 398 char 1',
                                      'Bytes<32>',
                                      pollId_0)
         }
@@ -910,19 +910,15 @@ export class Contract {
     return result_0;
   }
   _transientHash_1(value_0) {
-    const result_0 = __compactRuntime.transientHash(_descriptor_0, value_0);
-    return result_0;
-  }
-  _transientHash_2(value_0) {
-    const result_0 = __compactRuntime.transientHash(_descriptor_21, value_0);
+    const result_0 = __compactRuntime.transientHash(_descriptor_22, value_0);
     return result_0;
   }
   _persistentHash_0(value_0) {
-    const result_0 = __compactRuntime.persistentHash(_descriptor_22, value_0);
+    const result_0 = __compactRuntime.persistentHash(_descriptor_20, value_0);
     return result_0;
   }
   _persistentHash_1(value_0) {
-    const result_0 = __compactRuntime.persistentHash(_descriptor_20, value_0);
+    const result_0 = __compactRuntime.persistentHash(_descriptor_21, value_0);
     return result_0;
   }
   _persistentHash_2(value_0) {
@@ -966,8 +962,8 @@ export class Contract {
                                  result_0)
     }
     partialProofData.privateTranscriptOutputs.push({
-      value: _descriptor_17.toValue(result_0),
-      alignment: _descriptor_17.alignment()
+      value: _descriptor_19.toValue(result_0),
+      alignment: _descriptor_19.alignment()
     });
     return result_0;
   }
@@ -975,7 +971,7 @@ export class Contract {
     const __compact_pattern_tmp2_0 = signature_0;
     const announcement_0 = __compact_pattern_tmp2_0.announcement;
     const response_0 = __compact_pattern_tmp2_0.response;
-    const cFull_0 = this._transientHash_2({ ann_x:
+    const cFull_0 = this._transientHash_1({ ann_x:
                                               this._jubjubPointX_0(announcement_0),
                                             ann_y:
                                               this._jubjubPointY_0(announcement_0),
@@ -1053,8 +1049,8 @@ export class Contract {
                                  result_0)
     }
     partialProofData.privateTranscriptOutputs.push({
-      value: _descriptor_12.toValue(result_0),
-      alignment: _descriptor_12.alignment()
+      value: _descriptor_14.toValue(result_0),
+      alignment: _descriptor_14.alignment()
     });
     return result_0;
   }
@@ -1070,8 +1066,8 @@ export class Contract {
                                  result_0)
     }
     partialProofData.privateTranscriptOutputs.push({
-      value: _descriptor_15.toValue(result_0),
-      alignment: _descriptor_15.alignment()
+      value: _descriptor_13.toValue(result_0),
+      alignment: _descriptor_13.alignment()
     });
     return result_0;
   }
@@ -1087,8 +1083,8 @@ export class Contract {
                                  result_0)
     }
     partialProofData.privateTranscriptOutputs.push({
-      value: _descriptor_13.toValue(result_0),
-      alignment: _descriptor_13.alignment()
+      value: _descriptor_15.toValue(result_0),
+      alignment: _descriptor_15.alignment()
     });
     return result_0;
   }
@@ -1104,8 +1100,8 @@ export class Contract {
                                  result_0)
     }
     partialProofData.privateTranscriptOutputs.push({
-      value: _descriptor_14.toValue(result_0),
-      alignment: _descriptor_14.alignment()
+      value: _descriptor_10.toValue(result_0),
+      alignment: _descriptor_10.alignment()
     });
     return result_0;
   }
@@ -1121,8 +1117,8 @@ export class Contract {
                                  result_0)
     }
     partialProofData.privateTranscriptOutputs.push({
-      value: _descriptor_11.toValue(result_0),
-      alignment: _descriptor_11.alignment()
+      value: _descriptor_12.toValue(result_0),
+      alignment: _descriptor_12.alignment()
     });
     return result_0;
   }
@@ -2061,11 +2057,7 @@ export class Contract {
     const attPollId_0 = __compact_pattern_tmp3_0[4];
     const sig_0 = { announcement: this._constructJubjubPoint_0(ann_x_0, ann_y_0),
                     response: response_0 };
-    const userPkHash_0 = this._transientHash_0(this._deriveUserPublicKey_0(sk_0,
-                                                                           0n));
-    const msg_0 = [BigInt(credType_0),
-                   this._transientHash_1(pollId_0),
-                   userPkHash_0];
+    const msg_0 = [BigInt(credType_0), this._transientHash_0(pollId_0), 0n];
     this._schnorrVerify_0(context,
                           partialProofData,
                           msg_0,
@@ -2193,11 +2185,7 @@ export class Contract {
     const attPollId_0 = __compact_pattern_tmp1_0[4];
     const sig_0 = { announcement: this._constructJubjubPoint_0(ann_x_0, ann_y_0),
                     response: response_0 };
-    const userPkHash_0 = this._transientHash_0(this._deriveUserPublicKey_0(sk_0,
-                                                                           0n));
-    const msg_0 = [BigInt(credType_0),
-                   this._transientHash_1(pollId_0),
-                   userPkHash_0];
+    const msg_0 = [BigInt(credType_0), this._transientHash_0(pollId_0), 0n];
     this._schnorrVerify_0(context,
                           partialProofData,
                           msg_0,
@@ -2337,11 +2325,7 @@ export class Contract {
     const attPollId_0 = __compact_pattern_tmp2_0[4];
     const sig_0 = { announcement: this._constructJubjubPoint_0(ann_x_0, ann_y_0),
                     response: response_0 };
-    const userPkHash_0 = this._transientHash_0(this._deriveUserPublicKey_0(sk_0,
-                                                                           0n));
-    const msg_0 = [BigInt(credType_0),
-                   this._transientHash_1(pollId_0),
-                   userPkHash_0];
+    const msg_0 = [BigInt(credType_0), this._transientHash_0(pollId_0), 0n];
     this._schnorrVerify_0(context,
                           partialProofData,
                           msg_0,
