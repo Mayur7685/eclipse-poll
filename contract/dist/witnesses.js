@@ -1,4 +1,4 @@
-import { ecMulGenerator, jubjubPointX, jubjubPointY } from '@midnight-ntwrk/compact-runtime';
+// No compact-runtime imports needed — getAttestation returns plain bigint Fields
 const TWO_248 = 452312848583266388373324160190187140051835877600158453279131187530910662656n;
 export const witnesses = {
     getUserSecret: (ctx) => [ctx.privateState, ctx.privateState.userSecretKey],
@@ -8,18 +8,18 @@ export const witnesses = {
     getLayerWeights: (ctx) => [ctx.privateState, ctx.privateState.layerWeights],
     getLayerParents: (ctx) => [ctx.privateState, ctx.privateState.layerParents],
     getAttestation: (ctx) => {
-        const nonce = ctx.privateState.attestationNonce;
-        // ecMulGenerator(k) gives the valid Opaque<"JubjubPoint"> announcement R = k*G
-        // This is the only way to construct a JubjubPoint the ZK prover accepts
-        const announcement = ecMulGenerator(nonce ?? 1n);
+        const x = ctx.privateState.attestationAnnouncementX ?? 0n;
+        const y = ctx.privateState.attestationAnnouncementY ?? 0n;
         const response = ctx.privateState.attestationResponse ?? 0n;
-        // Verify we can round-trip the point (sanity check, remove in prod)
-        const ax = jubjubPointX(announcement);
-        const ay = jubjubPointY(announcement);
-        console.log('[getAttestation] R.x slice:', ax.toString().slice(0, 10), 'nonce:', nonce?.toString().slice(0, 8));
-        const sig = { announcement, response };
+        // Return ann_x, ann_y, response as plain bigint Fields — the circuit
+        // reconstructs the JubjubPoint using constructJubjubPoint(ann_x, ann_y).
+        // This avoids ever passing an opaque JubjubPoint from TS witnesses,
+        // which fails during ZK proof generation.
+        console.log('[getAttestation] ann_x slice:', x.toString().slice(0, 10));
         return [ctx.privateState, [
-                sig,
+                x,
+                y,
+                response,
                 ctx.privateState.attestationCredType,
                 ctx.privateState.attestationPollId,
             ]];

@@ -44,7 +44,9 @@ export type Witnesses<PS> = {
   getApprovalChoices(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, boolean[]];
   getLayerWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[][]];
   getLayerParents(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
-  getAttestation(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, [Schnorr_SchnorrSignature,
+  getAttestation(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, [bigint,
+                                                                              bigint,
+                                                                              bigint,
                                                                               CredentialType,
                                                                               PollId]];
 }
@@ -74,6 +76,8 @@ export type ImpureCircuits<PS> = {
                              pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
                              pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedApprovalVote(context: __compactRuntime.CircuitContext<PS>,
+                               pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -102,6 +106,8 @@ export type ProvableCircuits<PS> = {
                              pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
                              pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedApprovalVote(context: __compactRuntime.CircuitContext<PS>,
+                               pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -133,6 +139,8 @@ export type Circuits<PS> = {
                              pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
                              pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
+  castCredentialedApprovalVote(context: __compactRuntime.CircuitContext<PS>,
+                               pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 

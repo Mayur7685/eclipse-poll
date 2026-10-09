@@ -284,6 +284,29 @@
       }
     },
     {
+      "name": "castCredentialedApprovalVote",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "pollId",
+          "type": {
+            "type-name": "Alias",
+            "name": "PollId",
+            "type": {
+              "type-name": "Bytes",
+              "length": 32
+            }
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "closePoll",
       "pure": false,
       "proof": true,
@@ -416,27 +439,13 @@
         "type-name": "Tuple",
         "types": [
           {
-            "type-name": "Struct",
-            "name": "SchnorrSignature",
-            "elements": [
-              {
-                "name": "announcement",
-                "type": {
-                  "type-name": "Alias",
-                  "name": "JubjubPoint",
-                  "type": {
-                    "type-name": "Opaque",
-                    "tsType": "JubjubPoint"
-                  }
-                }
-              },
-              {
-                "name": "response",
-                "type": {
-                  "type-name": "Field"
-                }
-              }
-            ]
+            "type-name": "Field"
+          },
+          {
+            "type-name": "Field"
+          },
+          {
+            "type-name": "Field"
           },
           {
             "type-name": "Enum",
