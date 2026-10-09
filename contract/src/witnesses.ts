@@ -45,20 +45,13 @@ export const witnesses = {
     const x        = ctx.privateState.attestationAnnouncementX ?? 0n;
     const y        = ctx.privateState.attestationAnnouncementY ?? 0n;
     const response = ctx.privateState.attestationResponse ?? 0n;
+    // credType must be a JS number (0-2), not bigint — the compiled validator checks typeof === 'number'
+    const credType = Number(ctx.privateState.attestationCredType ?? 0n);
+    const pollId   = ctx.privateState.attestationPollId;
 
-    // Return ann_x, ann_y, response as plain bigint Fields — the circuit
-    // reconstructs the JubjubPoint using constructJubjubPoint(ann_x, ann_y).
-    // This avoids ever passing an opaque JubjubPoint from TS witnesses,
-    // which fails during ZK proof generation.
     console.log('[getAttestation] ann_x slice:', x.toString().slice(0, 10));
 
-    return [ctx.privateState, [
-      x,
-      y,
-      response,
-      ctx.privateState.attestationCredType,
-      ctx.privateState.attestationPollId,
-    ]];
+    return [ctx.privateState, [x, y, response, credType, pollId]];
   },
 
   getSchnorrReduction: (
