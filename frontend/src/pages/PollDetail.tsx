@@ -162,12 +162,10 @@ export default function PollDetail() {
         options,
         poll_type: onChainPoll?.pollType === 2 || backendPoll?.poll_type === 'hierarchical'
           ? 'hierarchical'
-          : onChainPoll?.pollType === 1 || backendPoll?.poll_type === 'flat'
-          ? 'flat'
           : onChainPoll?.pollType === 3 || backendPoll?.poll_type === 'approval'
           ? 'approval'
-          : onChainPoll?.pollType === 4 || backendPoll?.poll_type === 'survey'
-          ? 'survey'
+          : onChainPoll?.pollType === 1 || backendPoll?.poll_type === 'ranked' || backendPoll?.poll_type === 'flat'
+          ? 'flat'
           : 'simple',
       })
 
@@ -631,10 +629,12 @@ export default function PollDetail() {
                   <span className="font-medium text-gray-900">
                     {poll?.poll_type === 'simple'
                       ? (selectedOption !== null ? `Selected: ${poll.options[selectedOption]?.label}` : 'Tap an option to select')
+                      : poll?.poll_type === 'approval'
+                      ? (approvedOptions.size > 0 ? `${approvedOptions.size} option${approvedOptions.size !== 1 ? 's' : ''} approved` : 'Select options to approve')
                       : (hasRanked ? `${rankedCount} option${rankedCount !== 1 ? 's' : ''} ranked` : 'Tap options to rank them')}
                   </span>
-                  {(poll?.poll_type === 'simple' ? selectedOption !== null : hasRanked) && (
-                    <button onClick={() => { setRanking({}); setLayerRankings(new Map()); setSelectedOption(null) }}
+                  {(poll?.poll_type === 'simple' ? selectedOption !== null : poll?.poll_type === 'approval' ? approvedOptions.size > 0 : hasRanked) && (
+                    <button onClick={() => { setRanking({}); setLayerRankings(new Map()); setSelectedOption(null); setApprovedOptions(new Set()) }}
                       className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
                       Clear
                     </button>
@@ -642,7 +642,9 @@ export default function PollDetail() {
                 </div>
                 <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-[#0070F3] rounded-full transition-all"
-                    style={{ width: `${hasRanked ? Math.min(rankedCount / Math.max(layerOptions.length, 1) * 100, 100) : 0}%` }} />
+                    style={{ width: poll?.poll_type === 'approval'
+                      ? `${approvedOptions.size > 0 ? Math.min(approvedOptions.size / Math.max(poll.options.length, 1) * 100, 100) : 0}%`
+                      : `${hasRanked ? Math.min(rankedCount / Math.max(layerOptions.length, 1) * 100, 100) : 0}%` }} />
                 </div>
                 <div className="flex gap-3 w-full">
                   <button onClick={() => setTab('browse')}

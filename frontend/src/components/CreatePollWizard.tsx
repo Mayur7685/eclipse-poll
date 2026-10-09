@@ -139,7 +139,7 @@ export default function CreatePollWizard() {
         community_id: communityId,
         title,
         description,
-        poll_type: pollType === PollType.HIERARCHICAL ? 'hierarchical' : pollType === PollType.RANKED_CHOICE ? 'flat' : pollType === PollType.APPROVAL ? 'approval' : 'simple',
+        poll_type: pollType === PollType.HIERARCHICAL ? 'hierarchical' : pollType === PollType.RANKED_CHOICE ? 'ranked' : pollType === PollType.APPROVAL ? 'approval' : 'simple',
         cred_type: credType,
         options,
         creator: address || session.unshieldedAddress,
