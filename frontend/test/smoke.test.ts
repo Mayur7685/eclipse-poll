@@ -44,18 +44,18 @@ describe('ZK prover keys in public assets', () => {
     assert.ok(existsSync(keysDir), `Keys directory not found: ${keysDir}`);
   });
 
-  it('has exactly 11 prover files', () => {
+  it('has exactly 12 prover files', () => {
     const allFiles = readdirSync(keysDir);
     const proverFiles = allFiles.filter((f) => f.endsWith('.prover'));
 
     assert.strictEqual(
       proverFiles.length,
-      11,
-      `Expected 11 .prover files, found ${proverFiles.length}: [${proverFiles.join(', ')}]`,
+      12,
+      `Expected 12 .prover files, found ${proverFiles.length}: [${proverFiles.join(', ')}]`,
     );
   });
 
-  it('all 11 expected prover files are present', () => {
+  it('all 12 expected prover files are present', () => {
     const expected = [
       'castApprovalVote.prover',
       'castHierarchicalVote.prover',
@@ -66,6 +66,7 @@ describe('ZK prover keys in public assets', () => {
       'registerCommunity.prover',
       'castCredentialedBinaryVote.prover',
       'castCredentialedRankedVote.prover',
+      'castCredentialedApprovalVote.prover',
       'registerAttestationProvider.prover',
       'claimCommunityCredential.prover',
     ];
