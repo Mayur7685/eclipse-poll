@@ -260,7 +260,7 @@ export function useVoting() {
             attestationAnnouncementX: attestResult.announcementX,
             attestationAnnouncementY: attestResult.announcementY,
           });
-          circuitName = 'castCredentialedApprovalVote';
+          circuitName = 'castApprovalVote';
           setStatus('proving');
         } else {
           await psp.set(PRIVATE_STATE_ID, { ...existing, approvalChoices });
@@ -433,7 +433,7 @@ export function useVoting() {
         });
 
         setStatus('proving');
-        const result = await callCircuitOnMasterContract(session, 'castCredentialedBinaryVote', [pollIdBytes]);
+        const result = await callCircuitOnMasterContract(session, 'castBinaryVote', [pollIdBytes]);
         const resolvedHash = result.txHash ?? null;
         const pollIdHex = Buffer.from(pollIdBytes).toString('hex');
         markVoted(pollIdHex, address);
@@ -493,7 +493,7 @@ export function useVoting() {
         });
 
         setStatus('proving');
-        const result = await callCircuitOnMasterContract(session, 'castCredentialedRankedVote', [pollIdBytes]);
+        const result = await callCircuitOnMasterContract(session, 'castRankedVote', [pollIdBytes]);
         const resolvedHash = result.txHash ?? null;
         const pollIdHex = Buffer.from(pollIdBytes).toString('hex');
         markVoted(pollIdHex, address);

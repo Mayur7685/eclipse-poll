@@ -36,19 +36,12 @@ export type Schnorr_SchnorrSignature = { announcement: __compactRuntime.JubjubPo
                                        };
 
 export type Witnesses<PS> = {
-  getSchnorrReduction(context: __compactRuntime.WitnessContext<Ledger, PS>,
-                      challengeHash_0: bigint): [PS, [bigint, bigint]];
   getUserSecret(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, UserSecretKey];
   getVoteChoice(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
   getRankedWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
   getApprovalChoices(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, boolean[]];
   getLayerWeights(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[][]];
   getLayerParents(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint[]];
-  getAttestation(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, [bigint,
-                                                                              bigint,
-                                                                              bigint,
-                                                                              CredentialType,
-                                                                              PollId]];
 }
 
 export type ImpureCircuits<PS> = {
@@ -72,12 +65,6 @@ export type ImpureCircuits<PS> = {
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
                        pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedBinaryVote(context: __compactRuntime.CircuitContext<PS>,
-                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
-                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedApprovalVote(context: __compactRuntime.CircuitContext<PS>,
-                               pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -102,12 +89,6 @@ export type ProvableCircuits<PS> = {
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
                        pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedBinaryVote(context: __compactRuntime.CircuitContext<PS>,
-                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
-                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedApprovalVote(context: __compactRuntime.CircuitContext<PS>,
-                               pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 
@@ -135,12 +116,6 @@ export type Circuits<PS> = {
                    pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   castHierarchicalVote(context: __compactRuntime.CircuitContext<PS>,
                        pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedBinaryVote(context: __compactRuntime.CircuitContext<PS>,
-                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedRankedVote(context: __compactRuntime.CircuitContext<PS>,
-                             pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
-  castCredentialedApprovalVote(context: __compactRuntime.CircuitContext<PS>,
-                               pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
   closePoll(context: __compactRuntime.CircuitContext<PS>, pollId_0: PollId): __compactRuntime.CircuitResults<PS, []>;
 }
 

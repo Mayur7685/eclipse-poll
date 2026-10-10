@@ -238,75 +238,6 @@
       }
     },
     {
-      "name": "castCredentialedBinaryVote",
-      "pure": false,
-      "proof": true,
-      "arguments": [
-        {
-          "name": "pollId",
-          "type": {
-            "type-name": "Alias",
-            "name": "PollId",
-            "type": {
-              "type-name": "Bytes",
-              "length": 32
-            }
-          }
-        }
-      ],
-      "result-type": {
-        "type-name": "Tuple",
-        "types": [
-        ]
-      }
-    },
-    {
-      "name": "castCredentialedRankedVote",
-      "pure": false,
-      "proof": true,
-      "arguments": [
-        {
-          "name": "pollId",
-          "type": {
-            "type-name": "Alias",
-            "name": "PollId",
-            "type": {
-              "type-name": "Bytes",
-              "length": 32
-            }
-          }
-        }
-      ],
-      "result-type": {
-        "type-name": "Tuple",
-        "types": [
-        ]
-      }
-    },
-    {
-      "name": "castCredentialedApprovalVote",
-      "pure": false,
-      "proof": true,
-      "arguments": [
-        {
-          "name": "pollId",
-          "type": {
-            "type-name": "Alias",
-            "name": "PollId",
-            "type": {
-              "type-name": "Bytes",
-              "length": 32
-            }
-          }
-        }
-      ],
-      "result-type": {
-        "type-name": "Tuple",
-        "types": [
-        ]
-      }
-    },
-    {
       "name": "closePoll",
       "pure": false,
       "proof": true,
@@ -331,29 +262,6 @@
     }
   ],
   "witnesses": [
-    {
-      "name": "getSchnorrReduction",
-      "arguments": [
-        {
-          "name": "challengeHash",
-          "type": {
-            "type-name": "Field"
-          }
-        }
-      ],
-      "result type": {
-        "type-name": "Tuple",
-        "types": [
-          {
-            "type-name": "Field"
-          },
-          {
-            "type-name": "Uint",
-            "maxval": 452312848583266388373324160190187140051835877600158453279131187530910662655
-          }
-        ]
-      }
-    },
     {
       "name": "getUserSecret",
       "arguments": [
@@ -429,42 +337,6 @@
           "type-name": "Uint",
           "maxval": 255
         }
-      }
-    },
-    {
-      "name": "getAttestation",
-      "arguments": [
-      ],
-      "result type": {
-        "type-name": "Tuple",
-        "types": [
-          {
-            "type-name": "Field"
-          },
-          {
-            "type-name": "Field"
-          },
-          {
-            "type-name": "Field"
-          },
-          {
-            "type-name": "Enum",
-            "name": "CredentialType",
-            "elements": [
-              "FREE",
-              "ALLOWLIST",
-              "SOCIAL_OAUTH"
-            ]
-          },
-          {
-            "type-name": "Alias",
-            "name": "PollId",
-            "type": {
-              "type-name": "Bytes",
-              "length": 32
-            }
-          }
-        ]
       }
     }
   ],

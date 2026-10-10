@@ -32,9 +32,6 @@ export declare const witnesses: {
     getLayerParents: (ctx: {
         privateState: EclipsePollPrivateState;
     }) => (bigint[] | EclipsePollPrivateState)[];
-    getAttestation: (ctx: {
-        privateState: EclipsePollPrivateState;
-    }) => (EclipsePollPrivateState | (number | bigint | Uint8Array<ArrayBufferLike>)[])[];
     getSchnorrReduction: (ctx: {
         privateState: EclipsePollPrivateState;
     }, challengeHash: bigint) => (bigint[] | EclipsePollPrivateState)[];
