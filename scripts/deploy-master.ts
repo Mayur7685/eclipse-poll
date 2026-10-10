@@ -35,9 +35,9 @@ import * as fs from 'fs';
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const NETWORK_ID       = 'preprod' as const;
-const INDEXER_HTTP     = 'https://indexer.preprod.midnight.network/api/v4/graphql';
-const INDEXER_WS       = 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
-const RPC              = 'https://rpc.preprod.midnight.network';
+const INDEXER_HTTP     = 'https://midnight-preprod.blockfrost.io/api/v0?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN';
+const INDEXER_WS       = 'wss://midnight-preprod.blockfrost.io/api/v0/ws?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN';
+const RPC              = 'https://rpc.midnight-preprod.blockfrost.io?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN';
 const PROOF_SERVER     = 'http://127.0.0.1:6300';
 const PRIVATE_STATE_ID = 'eclipsePollPrivateState';
 const PRIVATE_STATE_STORE = 'eclipse-poll-deploy-state';
@@ -102,7 +102,7 @@ async function main() {
       indexerWsUrl:   INDEXER_WS,
     },
     provingServerUrl: new URL(PROOF_SERVER),
-    relayURL: new URL('wss://rpc.preprod.midnight.network'), // capital URL — required by wallet-sdk-capabilities
+    relayURL: new URL('https://rpc.midnight-preprod.blockfrost.io?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN'), // capital URL — required by wallet-sdk-capabilities
   };
 
   // 5. Build wallet via WalletFacade.init (v3 pattern)

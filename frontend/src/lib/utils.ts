@@ -3,7 +3,7 @@
 
 const INDEXER_URI =
   import.meta.env.VITE_MIDNIGHT_INDEXER_URI ??
-  'https://indexer.preprod.midnight.network/api/v4/graphql'
+  'https://midnight-preprod.blockfrost.io/api/v0?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN'
 
 const MASTER_CONTRACT =
   import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS ?? ''

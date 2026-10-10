@@ -97,7 +97,7 @@ export function createInitialPrivateState(userSecretKey?: Uint8Array): EclipsePo
 
 const INDEXER_URL = () =>
   (import.meta.env.VITE_MIDNIGHT_INDEXER_URI as string) ||
-  'https://indexer.preprod.midnight.network/api/v4/graphql';
+  'https://midnight-preprod.blockfrost.io/api/v0?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN';
 
 /** Query the indexer for the latest tx hash on a contract */
 async function getLatestContractTxHash(contractAddress: string): Promise<string | null> {
@@ -197,7 +197,7 @@ export async function deployEclipsePollContract(
     let deployTxHash = contractAddress; // fallback
     try {
       const INDEXER = import.meta.env.VITE_MIDNIGHT_INDEXER_URI as string
-        ?? 'https://indexer.preprod.midnight.network/api/v4/graphql';
+        ?? 'https://midnight-preprod.blockfrost.io/api/v0?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN';
       const res = await fetch(INDEXER, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
