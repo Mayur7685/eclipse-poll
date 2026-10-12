@@ -20,6 +20,7 @@ import SurveyDetail from './pages/SurveyDetail'
 import MyCredentials from './pages/MyCredentials'
 import CredentialsHub from './pages/CredentialsHub'
 import MyVotes from './pages/MyVotes'
+import Docs from './pages/Docs'
 import AdminSetup from './pages/AdminSetup'
 import OAuthCallback from './pages/OAuthCallback'
 
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="my-credentials" element={<MyCredentials />} />
         <Route path="my-votes" element={<MyVotes />} />
         {/* Admin-only: one-time setup to register attestation provider on-chain */}
+        <Route path="docs" element={<Docs />} />
         <Route path="admin/setup" element={<AdminSetup />} />
       </Route>
     </Routes>
