@@ -158,27 +158,229 @@ const content: Record<string, React.ReactNode> = {
   ),
 
   'poll-types': (
-    <div className="space-y-4">
-      <p className="text-gray-600 mb-4">Four voting mechanisms for different governance needs.</p>
-      {[
-        { name: 'Single Choice', tag: 'Simple', color: 'blue', desc: 'Pick exactly one option. Best for binary decisions or simple preferences.', use: 'Yes/No votes, feature flags' },
-        { name: 'Ranked Choice', tag: 'Ranked', color: 'green', desc: 'Assign weights to options in preference order. Higher-ranked = more votes.', use: 'Feature prioritization, elections' },
-        { name: 'Approval Voting', tag: 'Approval', color: 'amber', desc: 'Approve any number of options. Each approval gives +1 to that option.', use: 'Multi-candidate elections, budget allocation' },
-        { name: 'Hierarchical', tag: 'Hierarchical', color: 'gray', desc: 'Rank options within nested categories. For complex multi-layer decisions.', use: 'Budget across departments, governance layers' },
-      ].map(({ name, tag, color, desc, use }) => (
-        <Card key={name}>
-          <div className="flex items-center gap-2 mb-2">
-            <p className="text-sm font-semibold text-gray-900">{name}</p>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full border
-              ${color === 'blue'  ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                color === 'green' ? 'bg-green-50 text-green-700 border-green-100' :
-                color === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                'bg-gray-100 text-gray-600 border-gray-200'}`}>{tag}</span>
+    <div className="space-y-6">
+      <p className="text-gray-600 leading-relaxed">
+        Eclipse Poll supports four voting mechanisms. Each type is enforced on-chain by the Midnight smart contract — the circuit verifies your vote structure matches the poll type before accepting it.
+      </p>
+
+      {/* Single Choice */}
+      <div className="border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Single Choice</p>
+            <p className="text-xs text-blue-600 mt-0.5">castBinaryVote circuit</p>
           </div>
-          <p className="text-sm text-gray-600 mb-1">{desc}</p>
-          <p className="text-xs text-gray-400"><strong>Best for:</strong> {use}</p>
-        </Card>
-      ))}
+          <span className="text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full">Simple</span>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-sm text-gray-700 leading-relaxed">
+            The most straightforward poll type. Voters pick <strong>exactly one option</strong> from a list of 2–8 choices. Each vote adds +1 to that option's tally counter on-chain.
+          </p>
+          <div className="bg-gray-50 rounded-xl p-3 text-sm">
+            <p className="font-medium text-gray-700 mb-1.5">How it works</p>
+            <ul className="text-gray-600 space-y-1">
+              <li>1. Select one option from the list</li>
+              <li>2. Confirm in the modal — your choice is a private ZK witness</li>
+              <li>3. On-chain: the circuit reads your choice via <code className="bg-gray-100 px-1 rounded text-xs">getVoteChoice()</code> witness</li>
+              <li>4. The selected option's tally counter increments by 1</li>
+            </ul>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Best for</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• Yes / No decisions</li>
+                <li>• Feature flag votes</li>
+                <li>• Choosing between proposals</li>
+                <li>• Single-winner elections</li>
+              </ul>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Limitations</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• No nuance — all-or-nothing</li>
+                <li>• Susceptible to vote splitting</li>
+                <li>• Doesn't capture 2nd preferences</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Ranked Choice */}
+      <div className="border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 bg-green-50 border-b border-green-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Ranked Choice</p>
+            <p className="text-xs text-green-600 mt-0.5">castRankedVote circuit</p>
+          </div>
+          <span className="text-xs font-medium bg-green-100 text-green-700 border border-green-200 px-2.5 py-1 rounded-full">Ranked</span>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-sm text-gray-700 leading-relaxed">
+            Voters assign a <strong>weight (0–255)</strong> to each option. Options ranked higher receive more votes. Weights for all 8 slots are submitted as a private vector — the circuit tallies each option's weight on-chain.
+          </p>
+          <div className="bg-gray-50 rounded-xl p-3 text-sm">
+            <p className="font-medium text-gray-700 mb-1.5">How it works</p>
+            <ul className="text-gray-600 space-y-1">
+              <li>1. Tap options in order of preference — each tap assigns a rank weight</li>
+              <li>2. Weights are stored as a <code className="bg-gray-100 px-1 rounded text-xs">Vector&lt;8, Uint&lt;8&gt;&gt;</code> private witness</li>
+              <li>3. On-chain: each option's tally increments by its assigned weight</li>
+              <li>4. Options with weight 0 don't contribute to the tally</li>
+            </ul>
+          </div>
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs text-amber-700">
+            <strong>Example:</strong> 4 options — you assign weights [10, 7, 3, 0]. Option A gets +10, B gets +7, C gets +3, D gets nothing. The tally reflects your relative preferences.
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Best for</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• Feature prioritization</li>
+                <li>• Team/board elections</li>
+                <li>• Agenda ordering</li>
+                <li>• Budget weight allocation</li>
+              </ul>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Notes</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• Max 8 options per poll</li>
+                <li>• Weights are 0–255 per option</li>
+                <li>• Unranked options get weight 0</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Approval Voting */}
+      <div className="border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Approval Voting</p>
+            <p className="text-xs text-amber-600 mt-0.5">castApprovalVote circuit</p>
+          </div>
+          <span className="text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full">Approval</span>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-sm text-gray-700 leading-relaxed">
+            Voters <strong>approve any number of options</strong> — from none to all. Each approved option receives exactly +1 vote. Good for finding consensus across multiple acceptable choices.
+          </p>
+          <div className="bg-gray-50 rounded-xl p-3 text-sm">
+            <p className="font-medium text-gray-700 mb-1.5">How it works</p>
+            <ul className="text-gray-600 space-y-1">
+              <li>1. Check any/all options you find acceptable</li>
+              <li>2. Approvals are stored as a <code className="bg-gray-100 px-1 rounded text-xs">Vector&lt;8, Boolean&gt;</code> private witness</li>
+              <li>3. On-chain: each approved option's tally increments by 1</li>
+              <li>4. Unapproved options don't change</li>
+            </ul>
+          </div>
+          <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
+            <strong>Example:</strong> 4 candidates — you approve A, B, D (not C). Tallies: A+1, B+1, C+0, D+1. The candidate with the most approvals wins.
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Best for</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• Multi-seat elections</li>
+                <li>• Selecting multiple funded projects</li>
+                <li>• Finding broadly acceptable options</li>
+                <li>• Low-friction community votes</li>
+              </ul>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Notes</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• No strategic voting incentive</li>
+                <li>• Approving all = same as approving none</li>
+                <li>• Results show most broadly liked options</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hierarchical */}
+      <div className="border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Hierarchical Voting</p>
+            <p className="text-xs text-gray-500 mt-0.5">castHierarchicalVote circuit</p>
+          </div>
+          <span className="text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-1 rounded-full">Hierarchical</span>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-sm text-gray-700 leading-relaxed">
+            The most complex type — voters assign weights to options <strong>within nested category layers</strong> (up to 4 layers of 8 options each). Each layer has a parent option it belongs to. Tallies are tracked per layer and parent.
+          </p>
+          <div className="bg-gray-50 rounded-xl p-3 text-sm">
+            <p className="font-medium text-gray-700 mb-1.5">How it works</p>
+            <ul className="text-gray-600 space-y-1">
+              <li>1. Browse root options — tap to rank within each category</li>
+              <li>2. Drill into sub-options via the "sub ›" button</li>
+              <li>3. Weights stored as <code className="bg-gray-100 px-1 rounded text-xs">Vector&lt;4, Vector&lt;8, Uint&lt;8&gt;&gt;&gt;</code> per layer</li>
+              <li>4. On-chain: hierarchical tallies updated per parentId + optionIndex</li>
+            </ul>
+          </div>
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs text-amber-700">
+            <strong>Example:</strong> Budget allocation — Layer 0: Engineering (40%), Marketing (30%), Operations (30%). Layer 1 under Engineering: Frontend (50%), Backend (30%), Infra (20%). Each drill-down gets its own ranked weights.
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Best for</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• Budget allocation across departments</li>
+                <li>• Multi-tier governance decisions</li>
+                <li>• Roadmap prioritization with themes</li>
+                <li>• Complex policy votes with sub-clauses</li>
+              </ul>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-3">
+              <p className="font-medium text-gray-700 mb-1">Notes</p>
+              <ul className="text-gray-600 space-y-0.5 text-xs">
+                <li>• Max 4 layers, 8 options each</li>
+                <li>• Each layer tallied independently</li>
+                <li>• Most complex — use only when needed</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Comparison table */}
+      <div className="border border-gray-100 rounded-2xl overflow-hidden">
+        <div className="px-5 py-3 bg-gray-50 border-b border-gray-100">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick Comparison</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left px-4 py-2.5 font-semibold text-gray-700">Type</th>
+                <th className="text-left px-4 py-2.5 font-semibold text-gray-700">Selections</th>
+                <th className="text-left px-4 py-2.5 font-semibold text-gray-700">Tally method</th>
+                <th className="text-left px-4 py-2.5 font-semibold text-gray-700">Complexity</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {[
+                ['Single Choice', '1 option', '+1 to chosen option', 'Low'],
+                ['Ranked Choice', 'Up to 8, with weights', '+weight per option', 'Medium'],
+                ['Approval Voting', 'Any number', '+1 per approved option', 'Low'],
+                ['Hierarchical', 'Up to 32 (4×8), layered', '+weight per layer/option', 'High'],
+              ].map(([type, sel, tally, complexity]) => (
+                <tr key={type as string} className="hover:bg-gray-50">
+                  <td className="px-4 py-2.5 font-medium text-gray-800">{type}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{sel}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{tally}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{complexity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   ),
 
