@@ -72,8 +72,8 @@ const content: Record<string, React.ReactNode> = {
         <ul className="text-sm text-gray-600 space-y-2">
           <li><strong>Private voting</strong> — Your choice is a ZK private witness. Only tallies are on-chain.</li>
           <li><strong>Community governance</strong> — Create communities with custom eligibility rules.</li>
-          <li><strong>✅ One-time credentials</strong> — Prove eligibility once, vote on all community polls.</li>
-          <li><strong>📊 4 poll types</strong> — Single choice, ranked, approval, hierarchical.</li>
+          <li><strong>One-time credentials</strong> — Prove eligibility once, vote on all community polls.</li>
+          <li><strong>4 poll types</strong> — Single choice, ranked, approval, hierarchical.</li>
           <li><strong>Decentralized tallies</strong> — Results read directly from Midnight blockchain.</li>
         </ul>
       </Card>
