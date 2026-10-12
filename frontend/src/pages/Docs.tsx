@@ -4,17 +4,31 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 const sections = [
-  { id: 'overview',        title: '🌐 Overview' },
-  { id: 'getting-started', title: '⚡ Getting Started' },
-  { id: 'communities',     title: '🏛️ Communities' },
-  { id: 'credentials',     title: '✅ Credentials' },
-  { id: 'poll-types',      title: '📊 Poll Types' },
-  { id: 'voting',          title: '🗳️ Casting a Vote' },
-  { id: 'results',         title: '📈 Results' },
-  { id: 'my-votes',        title: '📋 My Votes' },
-  { id: 'faq',             title: '❓ FAQ' },
-  { id: 'tech',            title: '⚙️ Tech Stack' },
+  { id: 'overview',        title: 'Overview' },
+  { id: 'getting-started', title: 'Getting Started' },
+  { id: 'communities',     title: 'Communities' },
+  { id: 'credentials',     title: 'Credentials' },
+  { id: 'poll-types',      title: 'Poll Types' },
+  { id: 'voting',          title: 'Casting a Vote' },
+  { id: 'results',         title: 'Results' },
+  { id: 'my-votes',        title: 'My Votes' },
+  { id: 'faq',             title: 'FAQ' },
+  { id: 'tech',            title: 'Tech Stack' },
 ]
+
+// SVG icon per section
+const sectionIcon: Record<string, React.ReactNode> = {
+  overview:        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="9"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>,
+  'getting-started': <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>,
+  communities:     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+  credentials:     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>,
+  'poll-types':    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>,
+  voting:          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>,
+  results:         <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  'my-votes':      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>,
+  faq:             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17" strokeWidth="2"/></svg>,
+  tech:            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
+}
 
 function Card({ title, children }: { title?: string; children: React.ReactNode; className?: string }) {
   return (
@@ -56,11 +70,11 @@ const content: Record<string, React.ReactNode> = {
       </p>
       <Card title="Key Features">
         <ul className="text-sm text-gray-600 space-y-2">
-          <li><strong>🔒 Private voting</strong> — Your choice is a ZK private witness. Only tallies are on-chain.</li>
-          <li><strong>🏛️ Community governance</strong> — Create communities with custom eligibility rules.</li>
+          <li><strong>Private voting</strong> — Your choice is a ZK private witness. Only tallies are on-chain.</li>
+          <li><strong>Community governance</strong> — Create communities with custom eligibility rules.</li>
           <li><strong>✅ One-time credentials</strong> — Prove eligibility once, vote on all community polls.</li>
           <li><strong>📊 4 poll types</strong> — Single choice, ranked, approval, hierarchical.</li>
-          <li><strong>🌐 Decentralized tallies</strong> — Results read directly from Midnight blockchain.</li>
+          <li><strong>Decentralized tallies</strong> — Results read directly from Midnight blockchain.</li>
         </ul>
       </Card>
       <Card title="Network">
@@ -137,7 +151,7 @@ const content: Record<string, React.ReactNode> = {
       <Card title="What's stored on-chain?">
         <p className="text-sm text-gray-600">Only a <strong>cryptographic nullifier</strong> — a hash of your secret key + community ID. Nobody can link it to your identity or social accounts.</p>
       </Card>
-      <Card title="⚠️ Credential Decay">
+      <Card title="Credential Decay">
         <p className="text-sm text-amber-700">Voting power decreases over 5 periods. Renew your credential periodically to maintain full weight.</p>
       </Card>
     </div>
@@ -219,7 +233,7 @@ const content: Record<string, React.ReactNode> = {
           <li>On a new device, click <strong>Import Key</strong> → upload the file</li>
         </ol>
       </Card>
-      <Card title="⚠️ Important">
+      <Card title="Important">
         <p className="text-sm text-amber-700">Your vote key cannot be recovered if lost. Export before clearing browser data or switching devices.</p>
       </Card>
     </div>
@@ -311,11 +325,14 @@ export default function Docs() {
           <div className="sticky top-6 space-y-0.5">
             {sections.map(s => (
               <button key={s.id} onClick={() => setActive(s.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${
                   active === s.id
                     ? 'bg-[#0070F3] text-white font-medium'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}>
+                <span className={active === s.id ? 'text-white' : 'text-gray-400'}>
+                  {sectionIcon[s.id]}
+                </span>
                 {s.title}
               </button>
             ))}
@@ -333,9 +350,14 @@ export default function Docs() {
         {/* Content */}
         <main className="flex-1 min-w-0">
           <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-5 pb-4 border-b border-gray-50">
-              {sections.find(s => s.id === active)?.title}
-            </h2>
+            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-50">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0070F3] flex items-center justify-center">
+                {sectionIcon[active]}
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {sections.find(s => s.id === active)?.title}
+              </h2>
+            </div>
             {content[active]}
           </div>
 
