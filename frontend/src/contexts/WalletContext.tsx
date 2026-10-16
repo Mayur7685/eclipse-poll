@@ -104,7 +104,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // fetched lazily on first vote. This prefetch makes first vote faster.
       setTimeout(() => {
         sess.providers.zkConfigProvider
-          .getZkConfig('castBinaryVote')
+          .getProverKey('castBinaryVote')
           .catch(() => {}); // ignore errors — just warming cache
       }, 2000);
       return sess;
