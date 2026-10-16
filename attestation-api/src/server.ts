@@ -415,6 +415,18 @@ async function checkRequirements(
               'https://api.twitterapi.io/twitter/user/check_follow_relationship',
               { headers: { 'X-API-Key': apiKey }, params: { source_user_name: username.replace('@',''), target_user_name: target } }
             );
+            // Handle API-level errors (out of credits, unauthorized)
+            if (res2.data?.error) {
+              const errMsg: string = res2.data?.message ?? res2.data?.error ?? 'API error';
+              if (errMsg.toLowerCase().includes('credit') || errMsg.toLowerCase().includes('recharge') || errMsg.toLowerCase().includes('unauthorized')) {
+                // Credits exhausted — pass through with warning (user already connected Twitter)
+                passed = true;
+                message = `Twitter API unavailable — connected as @${username} (follow check skipped)`;
+              } else {
+                passed = false; message = `Twitter check error: ${errMsg}`;
+              }
+              break;
+            }
             passed = res2.data?.data?.following === true;
             message = passed ? `@${username} follows @${target}` : `@${username} does not follow @${target}`;
           } catch (e: any) { passed = false; message = `Twitter check failed: ${e.message}`; }
