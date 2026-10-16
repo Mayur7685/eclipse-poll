@@ -118,7 +118,7 @@ interface Props { community: CommunityConfig }
 export default function CredentialHub({ community }: Props) {
   const { address, isConnected, isReconnecting }  = useWallet()
   const hub = useCredentialHub(community)
-  const { claimCommunityCredential } = useVoting()
+  const { claimCommunityCredential, error: votingError } = useVoting()
   const { markCredentialClaimed, hasCredential } = useCredentials()
 
   // If user has already claimed via CredentialsHub page, show as active
@@ -168,7 +168,7 @@ export default function CredentialHub({ community }: Props) {
       const result = await claimCommunityCredential(community.community_id, accounts)
       if (!result) {
         setIssueStatus('error')
-        setIssueError('ZK proof failed. Check wallet and try again.')
+        setIssueError(votingError ?? 'ZK proof failed. Check wallet and try again.')
         return
       }
 
