@@ -5,8 +5,8 @@ Votes are ZK proofs — the network knows *a vote happened*, not *who voted* or 
 
 **Live:** https://eclipse-poll.vercel.app  
 **API:** https://eclipse-poll-api-h0a8.onrender.com  
-**Contract (preprod):** `321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82`  
-**Explorer:** https://explorer.1am.xyz/contract/321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82?network=preview
+**Contract (preprod):** `45e740efa6ea82dff81d898653b810485172cbe55dac841fe67d3d5cd31bdce5`  
+**Explorer:** https://explorer.1am.xyz/contract/45e740efa6ea82dff81d898653b810485172cbe55dac841fe67d3d5cd31bdce5?network=preview
 
 ---
 
@@ -92,7 +92,7 @@ PORT=4000
 
 **`frontend/.env`:**
 ```env
-VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS=321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82
+VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS=45e740efa6ea82dff81d898653b810485172cbe55dac841fe67d3d5cd31bdce5
 VITE_MIDNIGHT_INDEXER_WS_URL=wss://indexer.testnet.midnight.network/api/v1/graphql
 VITE_MIDNIGHT_NODE_URL=https://rpc.testnet.midnight.network
 VITE_VERIFIER_URL=http://localhost:4000

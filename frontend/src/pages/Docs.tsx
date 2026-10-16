@@ -497,7 +497,7 @@ const content: Record<string, React.ReactNode> = {
           className="flex-1 py-2.5 text-center text-sm font-medium bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors">
           GitHub →
         </a>
-        <a href="https://explorer.1am.xyz/contract/321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82?network=preview"
+        <a href="https://explorer.1am.xyz/contract/45e740efa6ea82dff81d898653b810485172cbe55dac841fe67d3d5cd31bdce5?network=preview"
           target="_blank" rel="noopener noreferrer"
           className="flex-1 py-2.5 text-center text-sm font-medium bg-blue-50 text-[#0070F3] border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors">
           Explorer →
