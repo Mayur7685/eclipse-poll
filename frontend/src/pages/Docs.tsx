@@ -462,7 +462,7 @@ const content: Record<string, React.ReactNode> = {
           <p><strong>Language:</strong> Compact (Midnight's ZK-native DSL)</p>
           <p><strong>Circuits:</strong> 9 provable circuits (vote, create poll, credential, etc.)</p>
           <p><strong>Network:</strong> Midnight Preprod via Blockfrost</p>
-          <p><strong>Contract:</strong> <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">321c2d72d262…</code></p>
+          <p><strong>Contract:</strong> <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">45e740efa6ea…</code></p>
         </div>
       </Card>
       <Card title="Frontend">
