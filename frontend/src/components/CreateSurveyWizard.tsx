@@ -293,7 +293,7 @@ export default function CreateSurveyWizard() {
                     title={title}
                   />
                   {createdTxHash && (
-                    <a href={`https://explorer.1am.xyz/tx/${createdTxHash}?network=preprod`} target="_blank" rel="noreferrer"
+                    <a href={`https://explorer.1am.xyz/tx/${createdTxHash}?network=preview`} target="_blank" rel="noreferrer"
                       className="text-xs text-[#0070F3] hover:underline mb-4 mt-3">View on Etherscan ↗</a>
                   )}
                   <button onClick={() => navigate(`/communities/${communityId}`)}

@@ -6,7 +6,7 @@ Votes are ZK proofs — the network knows *a vote happened*, not *who voted* or 
 **Live:** https://eclipse-poll.vercel.app  
 **API:** https://eclipse-poll-api-h0a8.onrender.com  
 **Contract (preprod):** `321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82`  
-**Explorer:** https://explorer.1am.xyz/contract/321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82?network=preprod
+**Explorer:** https://explorer.1am.xyz/contract/321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82?network=preview
 
 ---
 

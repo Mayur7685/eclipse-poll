@@ -82,7 +82,7 @@ export interface CommunityConfig {
 
 // ─── Connected accounts ────────────────────────────────────────────────────────
 
-/** Midnight wallet uses unshielded addresses (mn_addr_preprod1...) */
+/** Midnight wallet uses unshielded addresses (mn_addr_preview1...) */
 export type AccountType = 'MIDNIGHT_WALLET' | 'X_TWITTER' | 'DISCORD' | 'GITHUB' | 'TELEGRAM'
 
 export interface ConnectedAccount {

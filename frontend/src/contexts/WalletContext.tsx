@@ -41,7 +41,7 @@ function classifyError(err: any): WalletError {
     return {
       type: 'network',
       message: 'Network error',
-      hint: 'Check your internet connection and ensure the Midnight preprod network is accessible.',
+      hint: 'Check your internet connection and ensure the Midnight preview network is accessible.',
     };
   }
   return {

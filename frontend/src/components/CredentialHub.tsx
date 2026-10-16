@@ -342,7 +342,7 @@ export default function CredentialHub({ community }: Props) {
               <p className="text-sm font-semibold text-emerald-800">Attestation issued on Midnight!</p>
               <p className="text-xs text-emerald-600 mt-0.5">Your Schnorr attestation is ready. Refreshing…</p>
               {issueTxHash && (
-                <a href={`https://explorer.1am.xyz/tx/${issueTxHash}?network=preprod`}
+                <a href={`https://explorer.1am.xyz/tx/${issueTxHash}?network=preview`}
                   target="_blank" rel="noopener noreferrer"
                   className="text-xs text-emerald-600 hover:underline mt-1 block">
                   View transaction ↗

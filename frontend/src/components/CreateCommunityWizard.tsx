@@ -529,8 +529,8 @@ export default function CreateCommunityWizard() {
             <h2 className="text-2xl font-semibold text-gray-900">Community Created!</h2>
             <p className="text-sm text-gray-500 max-w-xs">Your community is registered on Midnight Network and ready to use.</p>
             <a href={createdTxHash && createdTxHash.length === 64
-                ? `https://explorer.1am.xyz/tx/${createdTxHash}?network=preprod`
-                : `https://explorer.1am.xyz/contract/${import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS}?network=preprod`}
+                ? `https://explorer.1am.xyz/tx/${createdTxHash}?network=preview`
+                : `https://explorer.1am.xyz/contract/${import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS}?network=preview`}
               target="_blank" rel="noopener noreferrer"
               className="text-sm font-medium text-[#0070F3] hover:underline">
               View contract on 1AM Explorer ↗

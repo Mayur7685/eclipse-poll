@@ -52,7 +52,7 @@ function RegisterAttestationStep({ contractAddress }: { contractAddress: string 
         <p className="text-sm font-semibold text-emerald-800"><svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Attestation provider registered</p>
         <p className="text-xs text-emerald-600">Credential-gated polls are enabled.</p>
         {txHash && (
-          <a href={`https://explorer.1am.xyz/tx/${txHash}?network=preprod`}
+          <a href={`https://explorer.1am.xyz/tx/${txHash}?network=preview`}
             target="_blank" rel="noopener noreferrer"
             className="text-xs text-emerald-700 hover:underline block">
             View transaction ↗
@@ -147,7 +147,7 @@ export default function AdminSetup() {
             Step 1 — Deploy Master Contract
           </span>
           <p className="text-sm text-gray-500 mt-3 leading-relaxed">
-            Deploys the Eclipse Poll master contract to Midnight preprod using your 1AM wallet.
+            Deploys the Eclipse Poll master contract to Midnight preview using your 1AM wallet.
             Only needs to be done once.
           </p>
         </div>
@@ -205,7 +205,7 @@ export default function AdminSetup() {
               </button>
             </div>
             {deployTxHash && deployTxHash !== contractAddress && (
-              <a href={`https://explorer.1am.xyz/tx/${deployTxHash}?network=preprod`}
+              <a href={`https://explorer.1am.xyz/tx/${deployTxHash}?network=preview`}
                 target="_blank" rel="noopener noreferrer"
                 className="text-xs text-emerald-700 hover:underline block">
                 View deploy transaction ↗

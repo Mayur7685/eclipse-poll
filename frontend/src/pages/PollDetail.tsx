@@ -360,7 +360,7 @@ export default function PollDetail() {
                   Your rankings are encrypted on-chain. The tally will be updated by the operator.
                 </p>
                 {txId && (
-                  <a href={`https://explorer.1am.xyz/tx/${txId}?network=preprod`}
+                  <a href={`https://explorer.1am.xyz/tx/${txId}?network=preview`}
                     target="_blank" rel="noopener noreferrer"
                     className="text-sm font-medium text-[#0070F3] hover:underline">
                     View transaction ↗

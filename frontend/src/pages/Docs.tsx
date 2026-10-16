@@ -97,8 +97,8 @@ const content: Record<string, React.ReactNode> = {
         browser extension. It handles ZK proof generation locally — your key never leaves your device. Set the wallet network to <strong>Preprod</strong>.
       </Step>
       <Step n={2} title="Get tNIGHT tokens">
-        The Midnight preprod testnet uses tNIGHT for fees. Get some from the{' '}
-        <a href="https://midnight-tmnight-preprod.nethermind.dev/" target="_blank" rel="noopener noreferrer" className="text-[#0070F3] hover:underline">Midnight Faucet</a>.
+        The Midnight preview testnet uses tNIGHT for fees. Get some from the{' '}
+        <a href="https://midnight-tmnight-preview.nethermind.dev/" target="_blank" rel="noopener noreferrer" className="text-[#0070F3] hover:underline">Midnight Faucet</a>.
         Wait a few minutes for DUST (fee currency) to generate from tNIGHT.
       </Step>
       <Step n={3} title="Connect & Vote">
@@ -497,7 +497,7 @@ const content: Record<string, React.ReactNode> = {
           className="flex-1 py-2.5 text-center text-sm font-medium bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors">
           GitHub →
         </a>
-        <a href="https://explorer.1am.xyz/contract/321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82?network=preprod"
+        <a href="https://explorer.1am.xyz/contract/321c2d72d2621b5f0d38cb244d89e6918d7ecdc7b6846be4e414f6652a70bb82?network=preview"
           target="_blank" rel="noopener noreferrer"
           className="flex-1 py-2.5 text-center text-sm font-medium bg-blue-50 text-[#0070F3] border border-blue-100 rounded-xl hover:bg-blue-100 transition-colors">
           Explorer →

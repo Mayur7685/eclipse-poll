@@ -201,14 +201,14 @@ export async function enableWallet(wallet: any): Promise<any> {
   if (!wallet) {
     throw new Error('1AM Wallet extension not detected. Please install the 1AM Wallet extension.');
   }
-  // Use connect('preprod') — the correct Midnight DApp Connector API (as used by Equilux)
+  // Use connect('preview') — the correct Midnight DApp Connector API (as used by Equilux)
   // This passes the network directly and avoids network mismatch issues
   if (typeof wallet.connect === 'function') {
-    const api = await wallet.connect('preprod');
+    const api = await wallet.connect('preview');
     // Verify network matches
     try {
       const status = await api.getConnectionStatus?.();
-      if (status?.status === 'connected' && status?.networkId !== 'preprod') {
+      if (status?.status === 'connected' && status?.networkId !== 'preview') {
         throw new Error(`Wallet is on "${status.networkId}" network. Please switch to Preprod in your 1AM Wallet settings.`);
       }
     } catch (e: any) {

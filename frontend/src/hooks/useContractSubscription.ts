@@ -5,7 +5,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 const WS_URL = import.meta.env.VITE_MIDNIGHT_INDEXER_WS_URI as string
-  ?? 'wss://midnight-preprod.blockfrost.io/api/v0/ws?project_id=nightpreprod3BJLzgMqHzHdRYFIQrrCGnDAuwaftRLN';
+  ?? 'wss://indexer.preview.midnight.network/api/v4/graphql/ws';
 
 interface UseContractSubscriptionOptions {
   contractAddress: string | null;

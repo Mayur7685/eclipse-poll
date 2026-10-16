@@ -124,7 +124,7 @@ export default function CreatePollWizard() {
       // Eclipse Poll polls expire by wall-clock time, not block number.
       const nowSec = Math.floor(Date.now() / 1000);
       const endTimeSec = durationMode === 'blocks'
-        ? nowSec + durationBlocks * 6        // ~6s per block on Midnight preprod
+        ? nowSec + durationBlocks * 6        // ~6s per block on Midnight preview
         : nowSec + durationDays * 24 * 60 * 60;
 
       const { txHash, contractAddress } = await callCircuitOnMasterContract(
@@ -188,8 +188,8 @@ export default function CreatePollWizard() {
             {deployedAddress && (
               <a
                 href={deployedAddress.length === 64
-                  ? `https://explorer.1am.xyz/tx/${deployedAddress}?network=preprod`
-                  : `https://explorer.1am.xyz/contract/${import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS}?network=preprod`}
+                  ? `https://explorer.1am.xyz/tx/${deployedAddress}?network=preview`
+                  : `https://explorer.1am.xyz/contract/${import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS}?network=preview`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-medium text-[#0070F3] hover:underline"

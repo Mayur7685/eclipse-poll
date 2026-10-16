@@ -8,7 +8,7 @@ interface ToastItem {
   id: number
   type: 'success' | 'error' | 'info'
   message: string
-  txId?: string   // links to Midnight preprod explorer
+  txId?: string   // links to Midnight preview explorer
 }
 
 interface ToastContextValue {
@@ -29,12 +29,12 @@ export function useToast() {
 
 /** Link to a tx on 1AM Explorer */
 const EXPLORER_TX = (txHash: string) =>
-  `https://explorer.1am.xyz/tx/${txHash}?network=preprod`
+  `https://explorer.1am.xyz/tx/${txHash}?network=preview`
 
 /** Fallback: link to the master contract page */
 const EXPLORER_CONTRACT = () => {
   const addr = import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS as string
-  return addr ? `https://explorer.1am.xyz/contract/${addr}?network=preprod` : null
+  return addr ? `https://explorer.1am.xyz/contract/${addr}?network=preview` : null
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
