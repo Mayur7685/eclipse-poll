@@ -23,8 +23,16 @@ const PRIVATE_STATE_ID = 'eclipsePollPrivateState';
 const MASTER_CONTRACT_KEY = 'midnight:master_contract_v3';
 
 export function getStoredMasterContractAddress(): string | null {
-  const addr = localStorage.getItem(MASTER_CONTRACT_KEY) || import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS || null;
-  return addr && addr.trim().length > 0 ? addr.trim() : null;
+  // Always prefer the env var (canonical contract address) over localStorage.
+  // This prevents stale old-network addresses from overriding the current contract.
+  const envAddr = import.meta.env.VITE_MIDNIGHT_MASTER_CONTRACT_ADDRESS as string | undefined;
+  if (envAddr && envAddr.trim().length > 0) {
+    // Keep localStorage in sync with env var
+    localStorage.setItem(MASTER_CONTRACT_KEY, envAddr.trim());
+    return envAddr.trim();
+  }
+  const stored = localStorage.getItem(MASTER_CONTRACT_KEY);
+  return stored && stored.trim().length > 0 ? stored.trim() : null;
 }
 
 export function setStoredMasterContractAddress(address: string): void {
